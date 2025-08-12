@@ -1,0 +1,67 @@
+{
+  "startTime": 1754959388682,
+  "endTime": 1754959428307,
+  "duration": 39625,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 44220416,
+      "heapTotal": 16068608,
+      "heapUsed": 8444424,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "passed",
+      "duration": 14996,
+      "output": "\n> src@0.1.0 lint\n> next lint\n\n\n./app/accounts/page.tsx\n71:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n"
+    },
+    "typecheck": {
+      "status": "passed",
+      "duration": 2599,
+      "output": ""
+    },
+    "build": {
+      "status": "passed",
+      "duration": 20511,
+      "output": "\n> src@0.1.0 build\n> next build\n\n   ▲ Next.js 15.4.6\n   - Environments: .env.local\n   - Experiments (use with caution):\n     ✓ optimizeCss\n\n   Creating an optimized production build ...\n ✓ Compiled successfully in 2000ms\n   Linting and checking validity of types ...\n\n./app/accounts/page.tsx\n71:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n   Collecting page data ...\n   Generating static pages (0/30) ...\n   Generating static pages (7/30) \r\n   Generating static pages (14/30) \r\n   Generating static pages (22/30) \r\n ✓ Generating static pages (30/30)\n   Finalizing page optimization ...\n   Collecting build traces ...\n\nRoute (app)                                 Size  First Load JS\n┌ ƒ /                                      364 B         100 kB\n├ ƒ /_not-found                            994 B         101 kB\n├ ƒ /accounts                            3.03 kB         103 kB\n├ ƒ /api/accounts                          162 B        99.9 kB\n├ ƒ /api/accounts/[id]/payment             162 B        99.9 kB\n├ ƒ /api/auth                              162 B        99.9 kB\n├ ƒ /api/backup                            162 B        99.9 kB\n├ ƒ /api/clients                           162 B        99.9 kB\n├ ƒ /api/db-status                         162 B        99.9 kB\n├ ƒ /api/delete-users                      162 B        99.9 kB\n├ ƒ /api/logout                            162 B        99.9 kB\n├ ƒ /api/movements                         162 B        99.9 kB\n├ ƒ /api/nfe                               162 B        99.9 kB\n├ ƒ /api/print                             162 B        99.9 kB\n├ ƒ /api/printers                          162 B        99.9 kB\n├ ƒ /api/products                          162 B        99.9 kB\n├ ƒ /api/register                          162 B        99.9 kB\n├ ƒ /api/user                              162 B        99.9 kB\n├ ƒ /api/users                             162 B        99.9 kB\n├ ƒ /api/users/[id]                        162 B        99.9 kB\n├ ƒ /backup                              2.09 kB         102 kB\n├ ƒ /clients                             3.05 kB         103 kB\n├ ƒ /login                                1.3 kB         106 kB\n├ ƒ /movements                           2.02 kB         107 kB\n├ ƒ /nfe                                 3.17 kB         108 kB\n├ ƒ /printers                            4.43 kB         104 kB\n├ ƒ /products                            2.19 kB         107 kB\n├ ƒ /profile                               162 B        99.9 kB\n└ ƒ /users                               1.82 kB         102 kB\n+ First Load JS shared by all            99.7 kB\n  ├ chunks/4bd1b696-cf72ae8a39fa05aa.js  54.1 kB\n  ├ chunks/964-7a34cadcb7695cec.js       43.6 kB\n  └ other shared chunks (total)          1.99 kB\n\n\nƒ Middleware                             35.2 kB\n\nƒ  (Dynamic)  server-rendered on demand\n\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 32,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 9,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 3,
+          "status": "error",
+          "error": ""
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - \u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: \u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 1473,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 0,
+    "warnings": 1,
+    "readyForProduction": true
+  }
+}

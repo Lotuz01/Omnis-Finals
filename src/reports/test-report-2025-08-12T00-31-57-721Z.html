@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Testes - 2025-08-12T00-31-57-721Z</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .status-passed { background: #d4edda; color: #155724; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; }
+        .card h3 { margin-top: 0; color: #333; }
+        .metric { display: flex; justify-content: space-between; margin: 10px 0; }
+        .metric strong { color: #666; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .production-status { text-align: center; padding: 20px; margin: 20px 0; border-radius: 8px; font-size: 18px; font-weight: bold; }
+        .production-ready { background: #d4edda; color: #155724; }
+        .production-not-ready { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Relatório de Testes de Produção</h1>
+            <p>Gerado em: 11/08/2025, 21:33:16</p>
+            <p>Duração total: 1.3m</p>
+        </div>
+        
+        <div class="content">
+            <div class="production-status production-not-ready">
+                ❌ SISTEMA NÃO ESTÁ PRONTO PARA PRODUÇÃO
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>📊 Resumo Geral</h3>
+                    <div class="metric"><span>Total de Testes:</span> <strong>6</strong></div>
+                    <div class="metric"><span>Passou:</span> <strong style="color: #28a745">4</strong></div>
+                    <div class="metric"><span>Falhou:</span> <strong style="color: #dc3545">1</strong></div>
+                    <div class="metric"><span>Avisos:</span> <strong style="color: #ffc107">1</strong></div>
+                </div>
+                
+                <div class="card">
+                    <h3>🖥️ Ambiente</h3>
+                    <div class="metric"><span>Node.js:</span> <strong>v20.9.0</strong></div>
+                    <div class="metric"><span>Plataforma:</span> <strong>win32</strong></div>
+                    <div class="metric"><span>Arquitetura:</span> <strong>x64</strong></div>
+                    <div class="metric"><span>Memória:</span> <strong>8MB</strong></div>
+                </div>
+            </div>
+            
+            <h2>📋 Detalhes dos Testes</h2>
+            
+                <div class="card">
+                    <h3>Lint 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>15.0s</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>
+> src@0.1.0 lint
+> next lint
+
+
+./app/accounts/page.tsx
+48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/backup/route.ts
+7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars
+94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/movements/route.ts
+5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars
+124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/users/route.ts
+6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars
+6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/AppWrapper.tsx
+6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/backup/page.tsx
+59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Typecheck 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>2.6s</strong></div>
+                    
+                    
+                    
+                </div>
+            
+                <div class="card">
+                    <h3>Build 
+                        <span class="status-badge status-failed">failed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>49.0s</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>Command failed with code 1
+Stdout: 
+> src@0.1.0 build
+> next build
+
+   ▲ Next.js 15.4.6
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ optimizeCss
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 1000ms
+   Linting and checking validity of types ...
+
+./app/accounts/page.tsx
+48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/backup/route.ts
+7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars
+94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/movements/route.ts
+5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars
+124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/users/route.ts
+6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars
+6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/AppWrapper.tsx
+6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/backup/page.tsx
+59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+
+Stderr:  ⚠ Warning: Found multiple lockfiles. Selecting C:\Users\Lotuz\package-lock.json.
+   Consider removing the lockfiles at:
+   * C:\Users\Lotuz\Desktop\Nova pasta\src\package-lock.json
+
+Failed to compile.
+
+.next/types/app/api/accounts/[id]/payment/route.ts:166:7
+Type error: Type '{ __tag__: "POST"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+
+[0m [90m 164 |[39m     [33mDiff[39m[33m<[39m
+ [90m 165 |[39m       [33mParamCheck[39m[33m<[39m[33mRouteContext[39m[33m>[39m[33m,[39m
+[31m[1m>[22m[39m[90m 166 |[39m       {
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 167 |[39m         __tag__[33m:[39m [32m'POST'[39m
+ [90m 168 |[39m         __param_position__[33m:[39m [32m'second'[39m
+ [90m 169 |[39m         __param_type__[33m:[39m [33mSecondArg[39m[33m<[39m[33mMaybeField[39m[33m<[39m[33mTEntry[39m[33m,[39m [32m'POST'[39m[33m>>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Performance 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>36ms</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE[0m
+[34m============================================================[0m
+[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)[0m
+[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)[0m
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Integration 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>9ms</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO[0m
+[34m==================================================[0m
+[1m
+🌐 Testando Conectividade...[0m
+[31m❌ Servidor respondendo: ERRO - [0m
+[31m❌ Erro crítico durante os testes: [0m
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Security 
+                        <span class="status-badge status-warning">warning</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>12.6s</strong></div>
+                    
+                    
+                        <div><strong>Problemas encontrados:</strong></div>
+                        <ul><li>Arquivo sensível encontrado: .env.local</li></ul>
+                    
+                    
+                </div>
+            
+        </div>
+    </div>
+</body>
+</html>

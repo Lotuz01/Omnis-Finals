@@ -1,0 +1,40 @@
+{
+  "name": "sistema-gestao",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão - Aplicação Next.js com TypeScript",
+  "private": true,
+  "scripts": {
+    "dev": "cd src && npm run dev",
+    "build": "cd src && npm run build",
+    "start": "cd src && npm run start",
+    "lint": "cd src && npm run lint",
+    "test": "cd src && npm run test",
+    "test:security": "cd src && node tests/security.test.js",
+    "test:load": "cd src && node tests/load.test.js",
+    "test:all": "cd src && node tests/run-all-tests.js",
+    "typecheck": "cd src && npm run typecheck",
+    "install-deps": "cd src && npm install",
+    "clean": "cd src && rm -rf .next node_modules && npm install",
+    "production": "npm run build && npm run start"
+  },
+  "keywords": [
+    "nextjs",
+    "typescript",
+    "gestao",
+    "sistema"
+  ],
+  "author": "Sistema de Gestão",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "devDependencies": {
+    "autocannon": "^8.0.0",
+    "axios": "^1.11.0"
+  }
+}

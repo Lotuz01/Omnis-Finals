@@ -1,0 +1,67 @@
+{
+  "startTime": 1754958888632,
+  "endTime": 1754958954965,
+  "duration": 66333,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 44105728,
+      "heapTotal": 16330752,
+      "heapUsed": 8498056,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "passed",
+      "duration": 14977,
+      "output": "\n> src@0.1.0 lint\n> next lint\n\n\n./app/accounts/page.tsx\n48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/backup/route.ts\n7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/movements/route.ts\n5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/users/route.ts\n6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/AppWrapper.tsx\n6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/backup/page.tsx\n59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n"
+    },
+    "typecheck": {
+      "status": "passed",
+      "duration": 2574,
+      "output": ""
+    },
+    "build": {
+      "status": "failed",
+      "duration": 47268,
+      "output": "Command failed with code 1\nStdout: \n> src@0.1.0 build\n> next build\n\n   ▲ Next.js 15.4.6\n   - Environments: .env.local\n   - Experiments (use with caution):\n     ✓ optimizeCss\n\n   Creating an optimized production build ...\n ✓ Compiled successfully in 1000ms\n   Linting and checking validity of types ...\n\n./app/accounts/page.tsx\n48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/backup/route.ts\n7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/movements/route.ts\n5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/users/route.ts\n6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/AppWrapper.tsx\n6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/backup/page.tsx\n59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n   Collecting page data ...\n   Generating static pages (0/30) ...\n\nStderr:  ⚠ Warning: Found multiple lockfiles. Selecting C:\\Users\\Lotuz\\package-lock.json.\n   Consider removing the lockfiles at:\n   * C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package-lock.json\n\nError occurred prerendering page \"/500\". Read more: https://nextjs.org/docs/messages/prerender-error\n[Error: Cannot find module 'critters'\nRequire stack:\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\node_modules\\next\\dist\\compiled\\next-server\\pages.runtime.prod.js\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\.next\\server\\pages\\_document.js\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\node_modules\\next\\dist\\server\\require.js\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\node_modules\\next\\dist\\server\\load-components.js\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\node_modules\\next\\dist\\build\\utils.js\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\node_modules\\next\\dist\\build\\worker.js\n- C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js] {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [Array]\n}\nExport encountered an error on /_error: /500, exiting the build.\n ⨯ Next.js build worker exited with code: 1 and signal: null\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 33,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 8,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 3,
+          "status": "error",
+          "error": ""
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - \u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: \u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 1468,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 4,
+    "failed": 1,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

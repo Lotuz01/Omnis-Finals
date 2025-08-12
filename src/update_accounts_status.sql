@@ -1,0 +1,1 @@
+ALTER TABLE accounts MODIFY status ENUM('pendente', 'pago', 'vencido', 'parcialmente_pago') DEFAULT 'pendente';

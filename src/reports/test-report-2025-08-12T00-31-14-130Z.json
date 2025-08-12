@@ -1,0 +1,67 @@
+{
+  "startTime": 1754958674131,
+  "endTime": 1754958692556,
+  "duration": 18425,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 44134400,
+      "heapTotal": 16068608,
+      "heapUsed": 8490760,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "passed",
+      "duration": 6598,
+      "output": "\n> src@0.1.0 lint\n> next lint\n\n\n./app/accounts/page.tsx\n48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/backup/route.ts\n7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/movements/route.ts\n5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/users/route.ts\n6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/AppWrapper.tsx\n6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/backup/page.tsx\n59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n"
+    },
+    "typecheck": {
+      "status": "passed",
+      "duration": 2765,
+      "output": ""
+    },
+    "build": {
+      "status": "failed",
+      "duration": 7558,
+      "output": "Command failed with code 1\nStdout: \n> src@0.1.0 build\n> postcss src/app/globals.css -o src/app/globals.css && next build\n\n\nStderr: \u001b[31mInput Error: You must pass a valid list of files to parse\u001b[39m\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 33,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 8,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 3,
+          "status": "error",
+          "error": ""
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - \u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: \u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 1459,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 4,
+    "failed": 1,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

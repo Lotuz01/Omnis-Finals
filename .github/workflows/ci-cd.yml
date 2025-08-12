@@ -1,0 +1,354 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  NODE_VERSION: '18'
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job de Testes
+  test:
+    name: Testes e Qualidade
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Verificar formatação
+        run: npm run format:check
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Verificar tipos TypeScript
+        run: npm run type-check
+      
+      - name: Testes unitários
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret_key_for_testing_only
+      
+      - name: Testes de integração
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret_key_for_testing_only
+      
+      - name: Testes de segurança
+        run: npm run test:security
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret_key_for_testing_only
+      
+      - name: Cobertura de código
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret_key_for_testing_only
+      
+      - name: Upload cobertura para Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+      
+      - name: Análise de vulnerabilidades
+        run: npm audit --audit-level=high
+      
+      - name: Verificar dependências desatualizadas
+        run: npm outdated || true
+
+  # Job de Build
+  build:
+    name: Build da Aplicação
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Build da aplicação
+        run: npm run build
+      
+      - name: Upload artefatos de build
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-files
+          path: |
+            .next/
+            public/
+            package.json
+            package-lock.json
+          retention-days: 7
+
+  # Job de Build Docker
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.event_name == 'push' || github.event_name == 'release'
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login no Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extrair metadados
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+      
+      - name: Build e Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job de Testes de Performance
+  performance-test:
+    name: Testes de Performance
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Iniciar serviços para teste
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 30
+      
+      - name: Aguardar aplicação
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+      
+      - name: Executar testes de carga
+        run: npm run test:load
+      
+      - name: Parar serviços
+        run: docker-compose -f docker-compose.test.yml down
+
+  # Job de Análise de Segurança
+  security-scan:
+    name: Análise de Segurança
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event_name == 'push'
+    
+    permissions:
+      security-events: write
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Executar Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript
+
+  # Job de Deploy para Staging
+  deploy-staging:
+    name: Deploy para Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build, performance-test]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    
+    environment:
+      name: staging
+      url: https://staging.yourdomain.com
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Deploy para staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Adicione aqui os comandos específicos do seu ambiente de staging
+          # Exemplo: kubectl, docker-compose, etc.
+      
+      - name: Executar smoke tests
+        run: |
+          sleep 30
+          curl -f https://staging.yourdomain.com/api/health
+      
+      - name: Notificar Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Job de Deploy para Produção
+  deploy-production:
+    name: Deploy para Produção
+    runs-on: ubuntu-latest
+    needs: [docker-build, security-scan]
+    if: github.event_name == 'release'
+    
+    environment:
+      name: production
+      url: https://yourdomain.com
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Deploy para produção
+        run: |
+          echo "Deploying to production environment..."
+          # Adicione aqui os comandos específicos do seu ambiente de produção
+          # Exemplo: kubectl, docker-compose, etc.
+      
+      - name: Executar smoke tests
+        run: |
+          sleep 60
+          curl -f https://yourdomain.com/api/health
+      
+      - name: Notificar equipe
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#production'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      
+      - name: Criar tag de release
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "deployed-$(date +'%Y%m%d-%H%M%S')" -m "Production deployment"
+          git push origin --tags
+
+  # Job de Limpeza
+  cleanup:
+    name: Limpeza
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+      - name: Limpar imagens antigas
+        run: |
+          echo "Cleaning up old images..."
+          # Adicione comandos para limpar imagens antigas do registry
+      
+      - name: Limpar artefatos
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: build-files
+          failOnError: false

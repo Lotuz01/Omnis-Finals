@@ -1,0 +1,67 @@
+{
+  "startTime": 1754958717722,
+  "endTime": 1754958796865,
+  "duration": 79143,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 44507136,
+      "heapTotal": 16330752,
+      "heapUsed": 8495576,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "passed",
+      "duration": 14963,
+      "output": "\n> src@0.1.0 lint\n> next lint\n\n\n./app/accounts/page.tsx\n48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/backup/route.ts\n7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/movements/route.ts\n5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/users/route.ts\n6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/AppWrapper.tsx\n6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/backup/page.tsx\n59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n"
+    },
+    "typecheck": {
+      "status": "passed",
+      "duration": 2598,
+      "output": ""
+    },
+    "build": {
+      "status": "failed",
+      "duration": 48979,
+      "output": "Command failed with code 1\nStdout: \n> src@0.1.0 build\n> next build\n\n   ▲ Next.js 15.4.6\n   - Environments: .env.local\n   - Experiments (use with caution):\n     ✓ optimizeCss\n\n   Creating an optimized production build ...\n ✓ Compiled successfully in 1000ms\n   Linting and checking validity of types ...\n\n./app/accounts/page.tsx\n48:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n73:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n112:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n208:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/backup/route.ts\n7:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n94:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n180:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n222:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n331:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/movements/route.ts\n5:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n124:7  Warning: 'movementSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars\n\n./app/api/users/route.ts\n6:10  Warning: 'withValidation' is defined but never used.  @typescript-eslint/no-unused-vars\n6:26  Warning: 'schemas' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/AppWrapper.tsx\n6:48  Warning: 'authToken' is defined but never used.  @typescript-eslint/no-unused-vars\n\n./app/backup/page.tsx\n59:6  Warning: React Hook useEffect has a missing dependency: 'loadBackups'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n\nStderr:  ⚠ Warning: Found multiple lockfiles. Selecting C:\\Users\\Lotuz\\package-lock.json.\n   Consider removing the lockfiles at:\n   * C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package-lock.json\n\nFailed to compile.\n\n.next/types/app/api/accounts/[id]/payment/route.ts:166:7\nType error: Type '{ __tag__: \"POST\"; __param_position__: \"second\"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.\n  The types of '__param_type__.params' are incompatible between these types.\n    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]\n\n\u001b[0m \u001b[90m 164 |\u001b[39m     \u001b[33mDiff\u001b[39m\u001b[33m<\u001b[39m\n \u001b[90m 165 |\u001b[39m       \u001b[33mParamCheck\u001b[39m\u001b[33m<\u001b[39m\u001b[33mRouteContext\u001b[39m\u001b[33m>\u001b[39m\u001b[33m,\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 166 |\u001b[39m       {\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 167 |\u001b[39m         __tag__\u001b[33m:\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 168 |\u001b[39m         __param_position__\u001b[33m:\u001b[39m \u001b[32m'second'\u001b[39m\n \u001b[90m 169 |\u001b[39m         __param_type__\u001b[33m:\u001b[39m \u001b[33mSecondArg\u001b[39m\u001b[33m<\u001b[39m\u001b[33mMaybeField\u001b[39m\u001b[33m<\u001b[39m\u001b[33mTEntry\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'POST'\u001b[39m\u001b[33m>>\u001b[39m\u001b[0m\nNext.js build worker exited with code: 1 and signal: null\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 36,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 9,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 2,
+          "status": "error",
+          "error": ""
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - \u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: \u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 12552,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 4,
+    "failed": 1,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

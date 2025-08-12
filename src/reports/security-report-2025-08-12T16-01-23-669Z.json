@@ -1,0 +1,456 @@
+{
+  "timestamp": "2025-08-12T16:01:23.669Z",
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1,
+    "errors": 0,
+    "vulnerabilities": 2
+  },
+  "vulnerabilities": [
+    {
+      "type": "Unauthorized Access",
+      "severity": "HIGH",
+      "details": "Rota /dashboard acessível sem autenticação"
+    },
+    {
+      "type": "No Rate Limiting",
+      "severity": "MEDIUM",
+      "details": "Sistema não implementa proteção contra brute force"
+    }
+  ],
+  "results": [
+    {
+      "test": "Security Headers",
+      "status": "PASSED",
+      "presentHeaders": [
+        {
+          "header": "x-frame-options",
+          "value": "DENY",
+          "description": "Proteção contra clickjacking"
+        },
+        {
+          "header": "x-content-type-options",
+          "value": "nosniff",
+          "description": "Prevenção de MIME sniffing"
+        },
+        {
+          "header": "x-xss-protection",
+          "value": "1; mode=block",
+          "description": "Proteção XSS básica"
+        },
+        {
+          "header": "strict-transport-security",
+          "value": "max-age=31536000; includeSubDomains; preload",
+          "description": "Força HTTPS"
+        },
+        {
+          "header": "content-security-policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; media-src 'self'",
+          "description": "Política de segurança de conteúdo"
+        },
+        {
+          "header": "referrer-policy",
+          "value": "strict-origin-when-cross-origin",
+          "description": "Controle de referrer"
+        }
+      ],
+      "missingHeaders": []
+    },
+    {
+      "test": "Authentication",
+      "status": "FAILED",
+      "tests": [
+        {
+          "route": "/dashboard",
+          "status": "VULNERABLE",
+          "httpStatus": 200
+        },
+        {
+          "route": "/api/products",
+          "status": "PROTECTED",
+          "httpStatus": 401
+        },
+        {
+          "route": "/api/clients",
+          "status": "PROTECTED",
+          "httpStatus": 401
+        },
+        {
+          "route": "/api/movements",
+          "status": "PROTECTED",
+          "httpStatus": 401
+        },
+        {
+          "test": "Brute Force Protection",
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": 404,
+              "time": 1755014480340
+            },
+            {
+              "attempt": 2,
+              "status": 404,
+              "time": 1755014480426
+            },
+            {
+              "attempt": 3,
+              "status": 404,
+              "time": 1755014480500
+            },
+            {
+              "attempt": 4,
+              "status": 404,
+              "time": 1755014480571
+            },
+            {
+              "attempt": 5,
+              "status": 404,
+              "time": 1755014480645
+            }
+          ],
+          "status": "VULNERABLE"
+        }
+      ]
+    },
+    {
+      "test": "SQL Injection",
+      "status": "PASSED",
+      "tests": [
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 401
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 401
+        }
+      ]
+    },
+    {
+      "test": "XSS",
+      "status": "PASSED",
+      "tests": [
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        }
+      ]
+    },
+    {
+      "test": "Information Disclosure",
+      "status": "PASSED",
+      "tests": [
+        {
+          "file": "/.env",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/.env.local",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/package.json",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/config.json",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/database.json",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/.git/config",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/backup.sql",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/admin",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/phpinfo.php",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        },
+        {
+          "file": "/server-status",
+          "status": "PROTECTED",
+          "httpStatus": 404
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    "Implementar middleware de autenticação em todas as rotas protegidas",
+    "Verificar configuração de sessões e tokens",
+    "Implementar rate limiting para APIs",
+    "Usar ferramentas como express-rate-limit"
+  ]
+}

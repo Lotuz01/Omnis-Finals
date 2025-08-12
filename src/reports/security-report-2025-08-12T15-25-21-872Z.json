@@ -1,0 +1,540 @@
+{
+  "timestamp": "2025-08-12T15:25:21.872Z",
+  "summary": {
+    "total": 5,
+    "passed": 2,
+    "failed": 2,
+    "errors": 1,
+    "vulnerabilities": 25
+  },
+  "vulnerabilities": [
+    {
+      "type": "No Rate Limiting",
+      "severity": "MEDIUM",
+      "details": "Sistema não implementa proteção contra brute force"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR '1'='1"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: '; DROP TABLE users; --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' UNION SELECT * FROM users --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: 1' OR '1'='1' --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: admin'--"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR 1=1#"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR '1'='1"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: '; DROP TABLE users; --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' UNION SELECT * FROM users --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: 1' OR '1'='1' --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: admin'--"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR 1=1#"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR '1'='1"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: '; DROP TABLE users; --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' UNION SELECT * FROM users --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: 1' OR '1'='1' --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: admin'--"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR 1=1#"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR '1'='1"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: '; DROP TABLE users; --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' UNION SELECT * FROM users --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: 1' OR '1'='1' --"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: admin'--"
+    },
+    {
+      "type": "SQL Injection",
+      "severity": "HIGH",
+      "details": "Possível injeção SQL em /api/movements com payload: ' OR 1=1#"
+    }
+  ],
+  "results": [
+    {
+      "test": "Security Headers",
+      "status": "ERROR",
+      "error": "Request failed with status code 500"
+    },
+    {
+      "test": "Authentication",
+      "status": "FAILED",
+      "tests": [
+        {
+          "route": "/dashboard",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "route": "/api/products",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "route": "/api/clients",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "route": "/api/movements",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "test": "Brute Force Protection",
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": 500,
+              "time": 1755012317314
+            },
+            {
+              "attempt": 2,
+              "status": 500,
+              "time": 1755012317424
+            },
+            {
+              "attempt": 3,
+              "status": 500,
+              "time": 1755012317509
+            },
+            {
+              "attempt": 4,
+              "status": 500,
+              "time": 1755012317642
+            },
+            {
+              "attempt": 5,
+              "status": 500,
+              "time": 1755012317710
+            }
+          ],
+          "status": "VULNERABLE"
+        }
+      ]
+    },
+    {
+      "test": "SQL Injection",
+      "status": "FAILED",
+      "tests": [
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "VULNERABLE",
+          "response": 500
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "VULNERABLE",
+          "response": 500
+        }
+      ]
+    },
+    {
+      "test": "XSS",
+      "status": "PASSED",
+      "tests": [
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        }
+      ]
+    },
+    {
+      "test": "Information Disclosure",
+      "status": "PASSED",
+      "tests": [
+        {
+          "file": "/.env",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/.env.local",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/package.json",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/config.json",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/database.json",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/.git/config",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/backup.sql",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/admin",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/phpinfo.php",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        },
+        {
+          "file": "/server-status",
+          "status": "PROTECTED",
+          "httpStatus": 500
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    "Usar prepared statements em todas as queries",
+    "Implementar validação rigorosa de entrada",
+    "Usar ORM com proteção contra SQL injection",
+    "Implementar rate limiting para APIs",
+    "Usar ferramentas como express-rate-limit"
+  ]
+}

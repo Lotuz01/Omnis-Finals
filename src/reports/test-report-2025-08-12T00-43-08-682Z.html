@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Testes - 2025-08-12T00-43-08-682Z</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .status-passed { background: #d4edda; color: #155724; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; }
+        .card h3 { margin-top: 0; color: #333; }
+        .metric { display: flex; justify-content: space-between; margin: 10px 0; }
+        .metric strong { color: #666; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .production-status { text-align: center; padding: 20px; margin: 20px 0; border-radius: 8px; font-size: 18px; font-weight: bold; }
+        .production-ready { background: #d4edda; color: #155724; }
+        .production-not-ready { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Relatório de Testes de Produção</h1>
+            <p>Gerado em: 11/08/2025, 21:43:48</p>
+            <p>Duração total: 39.6s</p>
+        </div>
+        
+        <div class="content">
+            <div class="production-status production-ready">
+                ✅ SISTEMA PRONTO PARA PRODUÇÃO
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>📊 Resumo Geral</h3>
+                    <div class="metric"><span>Total de Testes:</span> <strong>6</strong></div>
+                    <div class="metric"><span>Passou:</span> <strong style="color: #28a745">5</strong></div>
+                    <div class="metric"><span>Falhou:</span> <strong style="color: #dc3545">0</strong></div>
+                    <div class="metric"><span>Avisos:</span> <strong style="color: #ffc107">1</strong></div>
+                </div>
+                
+                <div class="card">
+                    <h3>🖥️ Ambiente</h3>
+                    <div class="metric"><span>Node.js:</span> <strong>v20.9.0</strong></div>
+                    <div class="metric"><span>Plataforma:</span> <strong>win32</strong></div>
+                    <div class="metric"><span>Arquitetura:</span> <strong>x64</strong></div>
+                    <div class="metric"><span>Memória:</span> <strong>8MB</strong></div>
+                </div>
+            </div>
+            
+            <h2>📋 Detalhes dos Testes</h2>
+            
+                <div class="card">
+                    <h3>Lint 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>15.0s</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>
+> src@0.1.0 lint
+> next lint
+
+
+./app/accounts/page.tsx
+71:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Typecheck 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>2.6s</strong></div>
+                    
+                    
+                    
+                </div>
+            
+                <div class="card">
+                    <h3>Build 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>20.5s</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>
+> src@0.1.0 build
+> next build
+
+   ▲ Next.js 15.4.6
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ optimizeCss
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2000ms
+   Linting and checking validity of types ...
+
+./app/accounts/page.tsx
+71:6  Warning: React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/30) ...
+   Generating static pages (7/30) 
+   Generating static pages (14/30) 
+   Generating static pages (22/30) 
+ ✓ Generating static pages (30/30)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      364 B         100 kB
+├ ƒ /_not-found                            994 B         101 kB
+├ ƒ /accounts                            3.03 kB         103 kB
+├ ƒ /api/accounts                          162 B        99.9 kB
+├ ƒ /api/accounts/[id]/payment             162 B        99.9 kB
+├ ƒ /api/auth                              162 B        99.9 kB
+├ ƒ /api/backup                            162 B        99.9 kB
+├ ƒ /api/clients                           162 B        99.9 kB
+├ ƒ /api/db-status                         162 B        99.9 kB
+├ ƒ /api/delete-users                      162 B        99.9 kB
+├ ƒ /api/logout                            162 B        99.9 kB
+├ ƒ /api/movements                         162 B        99.9 kB
+├ ƒ /api/nfe                               162 B        99.9 kB
+├ ƒ /api/print                             162 B        99.9 kB
+├ ƒ /api/printers                          162 B        99.9 kB
+├ ƒ /api/products                          162 B        99.9 kB
+├ ƒ /api/register                          162 B        99.9 kB
+├ ƒ /api/user                              162 B        99.9 kB
+├ ƒ /api/users                             162 B        99.9 kB
+├ ƒ /api/users/[id]                        162 B        99.9 kB
+├ ƒ /backup                              2.09 kB         102 kB
+├ ƒ /clients                             3.05 kB         103 kB
+├ ƒ /login                                1.3 kB         106 kB
+├ ƒ /movements                           2.02 kB         107 kB
+├ ƒ /nfe                                 3.17 kB         108 kB
+├ ƒ /printers                            4.43 kB         104 kB
+├ ƒ /products                            2.19 kB         107 kB
+├ ƒ /profile                               162 B        99.9 kB
+└ ƒ /users                               1.82 kB         102 kB
++ First Load JS shared by all            99.7 kB
+  ├ chunks/4bd1b696-cf72ae8a39fa05aa.js  54.1 kB
+  ├ chunks/964-7a34cadcb7695cec.js       43.6 kB
+  └ other shared chunks (total)          1.99 kB
+
+
+ƒ Middleware                             35.2 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Performance 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>32ms</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE[0m
+[34m============================================================[0m
+[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)[0m
+[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)[0m
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Integration 
+                        <span class="status-badge status-passed">passed</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>9ms</strong></div>
+                    
+                    
+                    <details><summary>Ver output completo</summary><pre>[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO[0m
+[34m==================================================[0m
+[1m
+🌐 Testando Conectividade...[0m
+[31m❌ Servidor respondendo: ERRO - [0m
+[31m❌ Erro crítico durante os testes: [0m
+</pre></details>
+                </div>
+            
+                <div class="card">
+                    <h3>Security 
+                        <span class="status-badge status-warning">warning</span>
+                    </h3>
+                    <div class="metric"><span>Duração:</span> <strong>1.5s</strong></div>
+                    
+                    
+                        <div><strong>Problemas encontrados:</strong></div>
+                        <ul><li>Arquivo sensível encontrado: .env.local</li></ul>
+                    
+                    
+                </div>
+            
+        </div>
+    </div>
+</body>
+</html>
