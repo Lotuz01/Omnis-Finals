@@ -1,8 +1,8 @@
-# Sistema de Gestão - Versão Produção
+# Omnis Finals
 
-## 📋 Visão Geral
+## 📋 Sistema Completo de Gestão Empresarial
 
-Sistema completo de gestão empresarial desenvolvido com Next.js, TypeScript, PostgreSQL e Redis, otimizado para produção com monitoramento avançado, segurança robusta e alta disponibilidade.
+Sistema web moderno e completo para gestão empresarial, desenvolvido com Next.js 15, TypeScript, MySQL e Tailwind CSS, com autenticação server-side, dashboard interativo e funcionalidades avançadas.
 
 ## 🚀 Funcionalidades Principais
 
