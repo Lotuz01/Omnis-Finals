@@ -1,0 +1,10 @@
+{
+  "/api/user/route": "app/api/user/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/users/route": "app/api/users/route.js",
+  "/admin/page": "app/admin/page.js",
+  "/login/page": "app/login/page.js",
+  "/backup/page": "app/backup/page.js",
+  "/users/page": "app/users/page.js",
+  "/page": "app/page.js"
+}

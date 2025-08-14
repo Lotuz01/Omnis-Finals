@@ -1,0 +1,67 @@
+{
+  "startTime": 1755120867069,
+  "endTime": 1755120907900,
+  "duration": 40831,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 48279552,
+      "heapTotal": 16592896,
+      "heapUsed": 8494944,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "failed",
+      "duration": 6763,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T21_34_33_694Z-debug-0.log\n"
+    },
+    "typecheck": {
+      "status": "failed",
+      "duration": 19913,
+      "output": "Command failed with code 1\nStdout: app/api/accounts/route.ts(40,43): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.\r\napp/api/accounts/route.ts(78,17): error TS2551: Property 'setex' does not exist on type 'CacheService'. Did you mean 'set'?\r\napp/api/user/activities/route.ts(21,43): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.\r\napp/api/user/stats/route.ts(3,24): error TS2307: Cannot find module '@/lib/db' or its corresponding type declarations.\r\napp/api/user/stats/route.ts(21,43): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.\r\nlib/redis.ts(345,17): error TS2551: Property 'redis' does not exist on type 'CacheService'. Did you mean 'isRedis'?\r\nlib/redis.ts(347,31): error TS2551: Property 'redis' does not exist on type 'CacheService'. Did you mean 'isRedis'?\r\nlib/redis.ts(348,35): error TS2551: Property 'redis' does not exist on type 'CacheService'. Did you mean 'isRedis'?\r\nlib/redis.ts(353,25): error TS2551: Property 'redis' does not exist on type 'CacheService'. Did you mean 'isRedis'?\r\n\nStderr: "
+    },
+    "build": {
+      "status": "failed",
+      "duration": 6700,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T21_35_00_299Z-debug-0.log\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 48,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 82,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 38,
+          "status": "error",
+          "error": "Status inesperado: 500"
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - Status inesperado: 500\u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: Status inesperado: 500\u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 7322,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 2,
+    "failed": 3,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

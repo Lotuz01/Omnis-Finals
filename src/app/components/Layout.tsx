@@ -94,7 +94,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
         <div className="p-4 text-xl lg:text-2xl font-bold border-b border-gray-700 text-center flex flex-col items-center">
           <Link href={isAdmin ? "/" : "/dashboard"} onClick={() => setSidebarOpen(false)}>
             <Image 
-              src="/logo-login-dark.png" 
+              src="/logo-text-black.svg" 
               alt="Omnis Logo" 
               width={160} 
               height={160} 
@@ -210,20 +210,20 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-64">
         {/* Header */}
-        <header className="bg-white shadow-md p-4 flex justify-between items-center">
+        <header className="bg-white shadow-md py-8 flex justify-between items-center">
           {/* Menu hambúrguer para mobile */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            className="lg:hidden p-2 ml-4 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
           
-          <h1 className="text-lg lg:text-2xl font-semibold text-gray-800 truncate">
+          <h1 className="text-lg lg:text-2xl font-semibold text-gray-800 truncate px-4">
             {(() => {
               const hour = new Date().getHours();
               if (hour >= 5 && hour < 12) return 'Bom dia';
@@ -233,7 +233,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
             {userName ? ` ${userName}` : ' Usuário'}
           </h1>
           {/* User profile or other header elements */}
-          <div className="flex items-center space-x-2 lg:space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-8 pr-4">
             
             <div className="relative" ref={dropdownRef}>
               <button

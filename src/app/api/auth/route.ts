@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '../../../database';
+import { dbPool } from '../../../utils/database-pool';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
-  let connection;
   try {
     const { username, password } = await request.json();
 
@@ -11,10 +10,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Missing username or password' }, { status: 400 });
     }
 
-    connection = await connectToDatabase();
-    const [rows] = await connection.execute(
-      'SELECT * FROM users WHERE username = ?', [username]
-    ) as [{ id: number; username: string; password: string; isAdmin: number; [key: string]: unknown }[], unknown];
+    const [rows] = await dbPool.execute(
+      'SELECT id, username, password, name, is_admin FROM users WHERE username = ?',
+      [username]
+    ) as [{ id: number; username: string; password: string; name: string; is_admin: number }[], unknown];
 
     if (rows.length === 0) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
@@ -27,7 +26,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
-    const response = NextResponse.json({ message: 'Login successful', user: { id: user.id, username: user.username, isAdmin: user.isAdmin } });
+    const response = NextResponse.json({ 
+      message: 'Login successful', 
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        is_admin: Boolean(user.is_admin),
+        isAdmin: Boolean(user.is_admin)
+      } 
+    });
     
     // Configurar cookie como cookie de sessão (sem persistência) para exigir login em cada nova sessão do navegador
     const timestamp = Date.now();
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
     });
 
     // Também armazenar dados do usuário como cookie de sessão
-    const userPayload = { id: user.id, username: user.username, isAdmin: Boolean(user.isAdmin) };
+    const userPayload = { id: user.id, username: user.username, is_admin: Boolean(user.is_admin) };
     response.cookies.set('user', JSON.stringify(userPayload), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -60,7 +67,5 @@ export async function POST(request: Request) {
       message: 'Internal server error', 
       error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
-  } finally {
-    if (connection) connection.end();
   }
 }

@@ -9,6 +9,8 @@ export async function GET() {
   const startTime = Date.now();
   
   try {
+    console.log('🔄 [API USERS] Iniciando busca de usuários...');
+    
     const cookieStore = await cookies();
     const userCookie = cookieStore.get('user');
     
@@ -19,21 +21,45 @@ export async function GET() {
 
     const user = JSON.parse(userCookie.value);
     
-    if (!user.isAdmin) {
+    if (!user.is_admin && !user.isAdmin) {
       logger.info('Acesso negado - usuário não é admin', {
         userId: user.id
       });
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
-    const [rows] = await dbPool.execute(
-      'SELECT id, username, name, isAdmin FROM users ORDER BY username'
-    );
+    console.log('🔄 [API USERS] Inicializando pool de conexões...');
+    
+    // Forçar inicialização do pool
+    await dbPool.initialize();
+    console.log('✅ [API USERS] Pool inicializado com sucesso!');
 
-    logger.info('Usuários listados com sucesso', { count: (rows as unknown[]).length, duration: Date.now() - startTime });
-    return NextResponse.json(rows);
+    console.log('🔄 [API USERS] Executando query...');
+    const [rows] = await dbPool.execute(
+      'SELECT id, username, name, is_admin FROM users ORDER BY username'
+    ) as [any[], unknown];
+
+    console.log('✅ [API USERS] Query executada com sucesso, rows:', rows.length);
+
+    // Mapear is_admin para isAdmin para compatibilidade com o frontend
+    const users = rows.map(user => ({
+      ...user,
+      isAdmin: Boolean(user.is_admin)
+    }));
+
+    logger.info('Usuários listados com sucesso', { count: users.length, duration: Date.now() - startTime });
+    return NextResponse.json(users);
     
   } catch (error) {
+    const err = error as any;
+    console.error('❌ [API USERS] Erro detalhado:', {
+      message: err.message,
+      code: err.code,
+      errno: err.errno,
+      sqlState: err.sqlState,
+      sqlMessage: err.sqlMessage,
+      stack: err.stack
+    });
     logger.error('Erro ao buscar usuários', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
@@ -53,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const user = JSON.parse(userCookie.value);
     
-    if (!user.isAdmin) {
+    if (!user.is_admin) {
       logger.info('Tentativa de criação de usuário por não-admin', { 
         userId: user.id, 
         username: user.username
@@ -81,7 +107,7 @@ export async function POST(request: NextRequest) {
       const hashedPassword = await bcrypt.hash(password, 12); // Aumentado de 10 para 12
       
       const [insertResult] = await connection.execute(
-        'INSERT INTO users (username, password, name, isAdmin) VALUES (?, ?, ?, ?)',
+        'INSERT INTO users (username, password, name, is_admin) VALUES (?, ?, ?, ?)',
         [username, hashedPassword, name, isAdmin || false]
       );
       
@@ -116,8 +142,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: Request) {
   try {
     const { cookies } = await import('next/headers');
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -137,16 +163,16 @@ export async function DELETE(request: Request) {
     
     // Verificar se o usuário logado é admin
     const [userRows] = await connection.execute(
-      'SELECT isAdmin FROM users WHERE username = ?',
+      'SELECT is_admin FROM users WHERE username = ?',
       [currentUsername]
-    ) as [{ isAdmin: boolean }[], unknown];
+    ) as [{ is_admin: boolean }[], unknown];
 
     if (userRows.length === 0) {
       connection.release();
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    const isCurrentUserAdmin = userRows[0].isAdmin;
+    const isCurrentUserAdmin = userRows[0].is_admin;
 
     // Apenas admins podem deletar usuários
     if (!isCurrentUserAdmin) {

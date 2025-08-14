@@ -1,0 +1,476 @@
+{
+  "timestamp": "2025-08-13T19:19:46.952Z",
+  "summary": {
+    "total": 5,
+    "passed": 3,
+    "failed": 2,
+    "errors": 0,
+    "vulnerabilities": 5
+  },
+  "vulnerabilities": [
+    {
+      "type": "Missing Security Headers",
+      "severity": "MEDIUM",
+      "details": [
+        {
+          "header": "strict-transport-security",
+          "description": "Força HTTPS"
+        }
+      ]
+    },
+    {
+      "type": "Unauthorized Access",
+      "severity": "HIGH",
+      "details": "Rota /dashboard acessível sem autenticação"
+    },
+    {
+      "type": "Unauthorized Access",
+      "severity": "HIGH",
+      "details": "Rota /api/products acessível sem autenticação"
+    },
+    {
+      "type": "Unauthorized Access",
+      "severity": "HIGH",
+      "details": "Rota /api/clients acessível sem autenticação"
+    },
+    {
+      "type": "Unauthorized Access",
+      "severity": "HIGH",
+      "details": "Rota /api/movements acessível sem autenticação"
+    }
+  ],
+  "results": [
+    {
+      "test": "Security Headers",
+      "status": "FAILED",
+      "presentHeaders": [
+        {
+          "header": "x-frame-options",
+          "value": "DENY",
+          "description": "Proteção contra clickjacking"
+        },
+        {
+          "header": "x-content-type-options",
+          "value": "nosniff",
+          "description": "Prevenção de MIME sniffing"
+        },
+        {
+          "header": "x-xss-protection",
+          "value": "1; mode=block",
+          "description": "Proteção XSS básica"
+        },
+        {
+          "header": "content-security-policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+          "description": "Política de segurança de conteúdo"
+        },
+        {
+          "header": "referrer-policy",
+          "value": "strict-origin-when-cross-origin",
+          "description": "Controle de referrer"
+        }
+      ],
+      "missingHeaders": [
+        {
+          "header": "strict-transport-security",
+          "description": "Força HTTPS"
+        }
+      ]
+    },
+    {
+      "test": "Authentication",
+      "status": "FAILED",
+      "tests": [
+        {
+          "route": "/dashboard",
+          "status": "VULNERABLE",
+          "httpStatus": 200
+        },
+        {
+          "route": "/api/products",
+          "status": "VULNERABLE",
+          "httpStatus": 200
+        },
+        {
+          "route": "/api/clients",
+          "status": "VULNERABLE",
+          "httpStatus": 200
+        },
+        {
+          "route": "/api/movements",
+          "status": "VULNERABLE",
+          "httpStatus": 200
+        },
+        {
+          "test": "Brute Force Protection",
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": 404,
+              "time": 1755112786376
+            },
+            {
+              "attempt": 2,
+              "status": 429,
+              "time": 1755112786386
+            },
+            {
+              "attempt": 3,
+              "status": 429,
+              "time": 1755112786396
+            },
+            {
+              "attempt": 4,
+              "status": 429,
+              "time": 1755112786406
+            },
+            {
+              "attempt": 5,
+              "status": 429,
+              "time": 1755112786415
+            }
+          ],
+          "status": "PROTECTED"
+        }
+      ]
+    },
+    {
+      "test": "SQL Injection",
+      "status": "PASSED",
+      "tests": [
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        }
+      ]
+    },
+    {
+      "test": "XSS",
+      "status": "PASSED",
+      "tests": [
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        }
+      ]
+    },
+    {
+      "test": "Information Disclosure",
+      "status": "PASSED",
+      "tests": [
+        {
+          "file": "/.env",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/.env.local",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/package.json",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/config.json",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/database.json",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/.git/config",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/backup.sql",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/admin",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/phpinfo.php",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/server-status",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    "Implementar headers de segurança obrigatórios",
+    "Configurar Content Security Policy (CSP)",
+    "Implementar middleware de autenticação em todas as rotas protegidas",
+    "Verificar configuração de sessões e tokens"
+  ]
+}

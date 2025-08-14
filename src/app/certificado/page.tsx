@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useConfirmation } from '@/components/ui/confirmation-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +66,7 @@ export default function CertificadoPage() {
     validade: '',
     ativo: true
   });
+  const { confirm, ConfirmationComponent } = useConfirmation();
 
   // Carregar status e informações do certificado
   useEffect(() => {
@@ -196,7 +198,15 @@ export default function CertificadoPage() {
   };
 
   const handleRemover = async () => {
-    if (!confirm('Tem certeza que deseja remover a configuração do certificado?')) {
+    const confirmed = await confirm({
+      title: 'Remover Certificado',
+      message: 'Tem certeza que deseja remover a configuração do certificado?',
+      confirmText: 'Remover',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (!confirmed) {
       return;
     }
 
@@ -591,6 +601,8 @@ export default function CertificadoPage() {
           </div>
         </CardContent>
       </Card>
+      
+      <ConfirmationComponent />
     </div>
   );
 }

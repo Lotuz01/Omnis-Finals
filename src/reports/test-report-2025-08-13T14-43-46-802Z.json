@@ -1,0 +1,68 @@
+{
+  "startTime": 1755096226803,
+  "endTime": 1755096265674,
+  "duration": 38871,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 48467968,
+      "heapTotal": 16330752,
+      "heapUsed": 8620720,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "failed",
+      "duration": 6627,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T14_43_53_296Z-debug-0.log\n"
+    },
+    "typecheck": {
+      "status": "failed",
+      "duration": 18266,
+      "output": "Command failed with code 1\nStdout: app/api/user/activities/route.ts(33,11): error TS7034: Variable 'activities' implicitly has type 'any[]' in some locations where its type cannot be determined.\r\napp/api/user/activities/route.ts(81,5): error TS7005: Variable 'activities' implicitly has an 'any[]' type.\r\napp/api/user/activities/route.ts(84,30): error TS7005: Variable 'activities' implicitly has an 'any[]' type.\r\napp/dashboard/page.tsx(45,13): error TS18046: 'error' is of type 'unknown'.\r\napp/dashboard/page.tsx(63,13): error TS18046: 'error' is of type 'unknown'.\r\napp/dashboard/page.tsx(115,31): error TS7006: Parameter 'dateString' implicitly has an 'any' type.\r\napp/dashboard/page.tsx(126,30): error TS7006: Parameter 'type' implicitly has an 'any' type.\r\napp/dashboard/page.tsx(135,35): error TS7006: Parameter 'activity' implicitly has an 'any' type.\r\napp/dashboard/page.tsx(298,69): error TS2339: Property 'type' does not exist on type 'never'.\r\napp/dashboard/page.tsx(300,37): error TS2339: Property 'type' does not exist on type 'never'.\r\napp/dashboard/page.tsx(308,41): error TS2339: Property 'value' does not exist on type 'never'.\r\napp/dashboard/page.tsx(311,60): error TS2339: Property 'created_at' does not exist on type 'never'.\r\napp/products/page.tsx(52,96): error TS7006: Parameter 'p' implicitly has an 'any' type.\r\napp/products/page.tsx(64,106): error TS7006: Parameter 'p' implicitly has an 'any' type.\r\ncomponents/notifications-dropdown.tsx(22,3): error TS2724: '\"@/components/ui/dropdown-menu\"' has no exported member named 'DropdownMenuHeader'. Did you mean 'DropdownMenu'?\r\n\nStderr: "
+    },
+    "build": {
+      "status": "failed",
+      "duration": 6645,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T14_44_18_200Z-debug-0.log\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 37,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 29,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 13,
+          "status": "error",
+          "error": "Status inesperado: 307"
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - Status inesperado: 307\u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: Status inesperado: 307\u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 7261,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local",
+        "Headers de segurança ausentes em middleware.ts"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 2,
+    "failed": 3,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

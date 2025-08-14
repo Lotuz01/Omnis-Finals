@@ -27,7 +27,7 @@ async function debugBackupIssues() {
     
     // 2. Verificar usuários admin
     const connection = await mysql.createConnection(dbConfig);
-    const [users] = await connection.execute('SELECT username, isAdmin FROM users WHERE isAdmin = 1');
+    const [users] = await connection.execute('SELECT username, is_admin FROM users WHERE is_admin = 1');
     console.log('👤 Usuários admin:', users);
     
     // 3. Testar deleção de backup (se houver mais de 1)
@@ -54,7 +54,7 @@ async function debugBackupIssues() {
     console.log('🔍 Verificando processos Node.js...');
     const { exec } = require('child_process');
     
-    exec('tasklist /FI "IMAGENAME eq node.exe" /FO CSV', (error, stdout, stderr) => {
+    exec('tasklist /FI "IMAGENAME eq node.exe" /FO CSV', (error, stdout) => {
       if (error) {
         console.error('Erro ao verificar processos:', error);
         return;

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Configurações de rate limiting
+// Configurações de rate limiting para produção
 const rateLimitConfig = {
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW || '900000'), // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX || '100'), // máximo 100 requests por janela
+  max: parseInt(process.env.RATE_LIMIT_MAX || '1000'), // máximo 1000 requests por janela
   message: {
     error: 'Muitas tentativas. Tente novamente em alguns minutos.',
     code: 'RATE_LIMIT_EXCEEDED'
@@ -14,15 +14,22 @@ const rateLimitConfig = {
   skipFailedRequests: process.env.RATE_LIMIT_SKIP_FAILED_REQUESTS === 'true'
 };
 
-// Rate limiting específico para login
+// Rate limiting específico para login com proteção contra brute force
 const loginRateLimit = {
   ...rateLimitConfig,
   windowMs: 900000, // 15 minutos
-  max: 5, // máximo 5 tentativas de login por IP
+  max: 10, // máximo 10 tentativas de login por IP
   message: {
     error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
     code: 'LOGIN_RATE_LIMIT_EXCEEDED'
   }
+};
+
+// Rate limiting progressivo para tentativas de login falhadas
+const bruteForceProtection = {
+  maxAttempts: 5, // Máximo de tentativas antes de aplicar delay
+  lockoutDuration: 1800000, // 30 minutos de bloqueio
+  progressiveDelay: true // Delay progressivo
 };
 
 // Headers de segurança
@@ -75,32 +82,30 @@ const SECURITY_HEADERS = {
 const blockedIPs = new Set<string>();
 const suspiciousIPs = new Map<string, { count: number; lastSeen: number }>();
 
-// Padrões de ataques comuns
+// Padrões de ataque comuns (ajustados para ser menos restritivos)
 const attackPatterns = [
-  // SQL Injection
-  /('|(\-\-)|;|\||\*|%|<|>|\[|\]|\{|\}|`|\\|\^|~)/i,
-  /(union|select|insert|update|delete|drop|create|alter|exec|execute)/i,
+  // SQL Injection mais específicos
+  /(union\s+select|insert\s+into|update\s+set|delete\s+from|drop\s+table)/gi,
+  /('\s*(or|and)\s*'\s*=\s*')|('\s*(or|and)\s*1\s*=\s*1)/gi,
   
-  // XSS
+  // XSS mais específicos
   /<script[^>]*>.*?<\/script>/gi,
   /<iframe[^>]*>.*?<\/iframe>/gi,
-  /javascript:/gi,
-  /on\w+\s*=/gi,
+  /javascript:\s*[^\s]/gi,
+  /on(load|click|error|focus)\s*=/gi,
   
   // Path Traversal
-  /\.\.[\/\\]/g,
-  /(etc\/passwd|etc\/shadow|boot\.ini)/gi,
+  /\.\.[\/\\].*\.\.[\/\\]/g,
+  /(etc\/passwd|etc\/shadow|boot\.ini|windows\/system32)/gi,
   
-  // Command Injection
-  /[;&|`$(){}\[\]]/g,
-  /(cat|ls|pwd|id|whoami|uname|wget|curl)/gi
+  // Command Injection mais específicos
+  /[;&|`]\s*(rm|del|format|shutdown)/gi
 ];
 
 // Função para detectar ataques
 function detectAttack(request: NextRequest): string | null {
   const url = request.url;
   const userAgent = request.headers.get('user-agent') || '';
-  const referer = request.headers.get('referer') || '';
   
   // Verificar URL
   for (const pattern of attackPatterns) {
@@ -167,7 +172,7 @@ function logSuspiciousActivity(ip: string, reason: string, request: NextRequest)
   });
   
   // Bloquear IP após muitas atividades suspeitas
-  if (current.count >= 5) {
+  if (current.count >= 10) {
     blockedIPs.add(ip);
     console.error(`[SECURITY] IP ${ip} blocked due to repeated suspicious activity`);
   }
@@ -274,21 +279,35 @@ export function securityMiddleware(request: NextRequest) {
     }
   }
   
-  // Rate limiting para APIs sensíveis (movements, products, etc.)
+  // Rate limiting para APIs sensíveis com limites diferenciados
   if (url.pathname.startsWith('/api/')) {
-    const apiLimit = url.pathname.includes('/movements') ? 50 : 100; // Limite menor para movements
+    let apiLimit = 100; // Limite padrão para APIs
+    
+    // Limites específicos por tipo de API
+    if (url.pathname.includes('/movements')) {
+      apiLimit = 200; // Movimentações podem ter mais requests
+    } else if (url.pathname.includes('/products') || url.pathname.includes('/clients')) {
+      apiLimit = 150; // Produtos e clientes
+    } else if (url.pathname.includes('/auth') || url.pathname.includes('/login')) {
+      apiLimit = loginRateLimit.max; // Usar limite de login
+    } else if (url.pathname.includes('/health') || url.pathname.includes('/metrics')) {
+      apiLimit = 500; // Endpoints de monitoramento
+    }
+    
     if (routeRateLimit.count > apiLimit) {
       logSuspiciousActivity(clientIP, `API rate limit exceeded: ${routeRateLimit.count} requests to ${url.pathname}`, request);
       return new NextResponse(JSON.stringify({
         error: 'Rate limit exceeded for this API endpoint',
-        code: 'API_RATE_LIMIT_EXCEEDED'
+        code: 'API_RATE_LIMIT_EXCEEDED',
+        limit: apiLimit,
+        windowMs: rateLimitConfig.windowMs
       }), {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
           'Retry-After': Math.ceil(rateLimitConfig.windowMs / 1000).toString(),
           'X-RateLimit-Limit': apiLimit.toString(),
-          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Remaining': Math.max(0, apiLimit - routeRateLimit.count).toString(),
           'X-RateLimit-Reset': new Date(now + rateLimitConfig.windowMs).toISOString()
         }
       });

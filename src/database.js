@@ -1,34 +1,67 @@
 // src/database.js
 
-import mysql from 'mysql2/promise';
+const mysql = require('mysql2/promise');
 
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'pdv_system',
+// Configurações do banco de dados MySQL
+const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_PORT = process.env.DB_PORT || 3306;
+const DB_USER = process.env.DB_USER || 'root';
+const DB_PASSWORD = process.env.DB_PASSWORD || '';
+const DB_NAME = process.env.DB_NAME || 'pdv_system';
+
+// Configuração MySQL
+const mysqlConfig = {
+  host: DB_HOST,
+  port: DB_PORT,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
 };
 
-export async function connectToDatabase() {
+let connection = null;
+
+// Função para conectar ao banco de dados MySQL
+async function connectToDatabase() {
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    console.log('Conectado ao banco de dados MySQL!');
+    console.log('🔄 Conectando ao MySQL...');
+    connection = await mysql.createConnection(mysqlConfig);
+    console.log('✅ Conectado ao MySQL com sucesso!');
     return connection;
   } catch (error) {
-    console.error('Erro ao conectar ao banco de dados. Verifique as variáveis de ambiente DB_HOST, DB_USER, DB_PASSWORD e DB_NAME:', error);
+    console.error('❌ Erro ao conectar ao MySQL:', error.message);
+    console.error('💡 Verifique se o MySQL está rodando e as credenciais estão corretas.');
+    console.error('💡 Consulte o arquivo SOLUCAO_MYSQL.md para instruções de configuração.');
     throw error;
   }
 }
 
-// Exemplo de uso (opcional, pode ser removido depois)
-// (async () => {
-//   let connection;
-//   try {
-//     connection = await connectToDatabase();
-//     // Faça suas operações de banco de dados aqui
-//   } catch (error) {
-//     // Lidar com o erro
-//   } finally {
-//     if (connection) connection.end();
-//   }
-// })();
+// Função para executar queries MySQL
+async function executeQuery(query, params = []) {
+  try {
+    if (!connection) {
+      await connectToDatabase();
+    }
+    
+    const [rows] = await connection.execute(query, params);
+    return rows;
+  } catch (error) {
+    console.error('❌ Erro ao executar query MySQL:', error.message);
+    throw error;
+  }
+}
+
+// Função para fechar conexão
+async function closeConnection() {
+  if (connection) {
+    await connection.end();
+    connection = null;
+    console.log('✅ Conexão com MySQL fechada');
+  }
+}
+
+module.exports = {
+  connectToDatabase,
+  executeQuery,
+  closeConnection,
+  connection: () => connection
+};

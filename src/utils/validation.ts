@@ -8,7 +8,7 @@ export interface ValidationRule {
   min?: number;
   max?: number;
   pattern?: RegExp;
-  custom?: (value: any) => boolean | string;
+  custom?: (value: unknown) => boolean | string;
 }
 
 export interface ValidationSchema {
@@ -103,7 +103,7 @@ export class Validator {
   }
 
   // Validar um campo individual
-  private validateField(value: any, rule: ValidationRule, fieldName: string): ValidationError | null {
+  private validateField(value: unknown, rule: ValidationRule, fieldName: string): ValidationError | null {
     // Verificar se é obrigatório
     if (rule.required && (value === undefined || value === null || value === '')) {
       return { field: fieldName, message: `${fieldName} é obrigatório` };
@@ -134,27 +134,27 @@ export class Validator {
           }
           break;
         case 'email':
-          if (!this.validateEmail(value)) {
+          if (typeof value === 'string' && !this.validateEmail(value)) {
             return { field: fieldName, message: `${fieldName} deve ser um email válido` };
           }
           break;
         case 'cnpj':
-          if (!this.validateCNPJ(value)) {
+          if (typeof value === 'string' && !this.validateCNPJ(value)) {
             return { field: fieldName, message: `${fieldName} deve ser um CNPJ válido` };
           }
           break;
         case 'cpf':
-          if (!this.validateCPF(value)) {
+          if (typeof value === 'string' && !this.validateCPF(value)) {
             return { field: fieldName, message: `${fieldName} deve ser um CPF válido` };
           }
           break;
         case 'phone':
-          if (!this.validatePhone(value)) {
+          if (typeof value === 'string' && !this.validatePhone(value)) {
             return { field: fieldName, message: `${fieldName} deve ser um telefone válido` };
           }
           break;
         case 'date':
-          if (!this.validateDate(value)) {
+          if (typeof value === 'string' && !this.validateDate(value)) {
             return { field: fieldName, message: `${fieldName} deve ser uma data válida` };
           }
           break;
@@ -201,7 +201,7 @@ export class Validator {
   }
 
   // Validar objeto completo
-  public validate(data: any, schema: ValidationSchema): ValidationError[] {
+  public validate(data: Record<string, unknown>, schema: ValidationSchema): ValidationError[] {
     const errors: ValidationError[] = [];
 
     for (const [fieldName, rule] of Object.entries(schema)) {
@@ -215,8 +215,8 @@ export class Validator {
   }
 
   // Sanitizar dados de entrada
-  public sanitize(data: any, schema: ValidationSchema): any {
-    const sanitized: any = {};
+  public sanitize(data: Record<string, unknown>, schema: ValidationSchema): Record<string, unknown> {
+    const sanitized: Record<string, unknown> = {};
 
     for (const [fieldName, rule] of Object.entries(schema)) {
       let value = data[fieldName];
@@ -232,7 +232,7 @@ export class Validator {
         }
 
         // Remover caracteres especiais para CNPJ/CPF
-        if (rule.type === 'cnpj' || rule.type === 'cpf') {
+        if ((rule.type === 'cnpj' || rule.type === 'cpf') && typeof value === 'string') {
           value = value.replace(/[^\d]/g, '');
         }
 
@@ -296,8 +296,8 @@ export const validator = Validator.getInstance();
 
 // Middleware para validação em APIs Next.js
 export function withValidation(schema: ValidationSchema) {
-  return function <T extends (...args: any[]) => any>(handler: T): T {
-    return (async (request: Request, ...args: any[]) => {
+  return function <T extends (...args: unknown[]) => unknown>(handler: T): T {
+    return (async (request: Request, ...args: unknown[]) => {
       try {
         const body = await request.json();
         
@@ -321,10 +321,10 @@ export function withValidation(schema: ValidationSchema) {
         }
         
         // Adicionar dados sanitizados à requisição
-        (request as any).validatedData = sanitizedData;
+        (request as unknown as { validatedData: Record<string, unknown> }).validatedData = sanitizedData;
         
         return handler(request, ...args);
-      } catch (error) {
+      } catch {
         return new Response(
           JSON.stringify({ error: 'Erro ao processar dados' }), 
           { 

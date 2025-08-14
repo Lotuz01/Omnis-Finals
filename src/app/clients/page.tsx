@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useNotify } from '@/contexts/notifications-context';
+import { useConfirmation } from '@/components/ui/confirmation-modal';
 
 interface Client {
   id: number;
@@ -17,6 +19,8 @@ interface Client {
 }
 
 const ClientsPage = () => {
+  const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotify();
+  const { confirm, ConfirmationComponent } = useConfirmation();
   const [clients, setClients] = useState<Client[]>([]);
   const [newClient, setNewClient] = useState({
     company_name: '',
@@ -50,6 +54,10 @@ const ClientsPage = () => {
       setClients(data);
     } catch (error) {
       console.error('Failed to fetch clients:', error);
+      notifyError(
+        'Erro ao Carregar Clientes',
+        'Não foi possível carregar a lista de clientes. Verifique sua conexão e tente novamente.'
+      );
     } finally {
       setLoading(false);
     }
@@ -171,6 +179,11 @@ const ClientsPage = () => {
           state: data.uf || ''
         }));
       }
+      
+      notifyInfo(
+        'CEP Encontrado!',
+        `Endereço preenchido automaticamente: ${data.localidade}/${data.uf}`
+      );
     } catch {
       setFormErrors(prev => ({ ...prev, zip_code: 'Erro ao buscar CEP' }));
     } finally {
@@ -245,11 +258,17 @@ const ClientsPage = () => {
         contact_person: '',
       });
       setFormErrors({});
-      setSuccessMessage('Cliente criado com sucesso!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      notifySuccess(
+        'Cliente Criado!',
+        `O cliente "${newClient.company_name}" foi adicionado com sucesso.`
+      );
       fetchClients();
     } catch (error) {
       console.error('Error creating client:', error);
+      notifyError(
+        'Erro ao Criar Cliente',
+        `Não foi possível criar o cliente "${newClient.company_name}". ${(error as Error).message}`
+      );
       setFormErrors({ general: (error as Error).message });
     } finally {
       setLoading(false);
@@ -293,11 +312,17 @@ const ClientsPage = () => {
 
       setEditingClient(null);
       setFormErrors({});
-      setSuccessMessage('Cliente atualizado com sucesso!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      notifySuccess(
+        'Cliente Atualizado!',
+        `As informações do cliente "${editingClient.company_name}" foram atualizadas com sucesso.`
+      );
       fetchClients();
     } catch (error) {
       console.error('Error updating client:', error);
+      notifyError(
+        'Erro ao Atualizar Cliente',
+        `Não foi possível atualizar o cliente "${editingClient.company_name}". ${(error as Error).message}`
+      );
       setFormErrors({ general: (error as Error).message });
     } finally {
       setLoading(false);
@@ -305,7 +330,18 @@ const ClientsPage = () => {
   };
 
   const handleDeleteClient = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir este cliente?')) {
+    const client = clients.find(c => c.id === id);
+    const clientName = client?.company_name || 'Cliente';
+    
+    const confirmed = await confirm({
+      title: 'Excluir Cliente',
+      message: `Tem certeza que deseja excluir o cliente "${clientName}"?`,
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (!confirmed) {
       return;
     }
 
@@ -324,11 +360,17 @@ const ClientsPage = () => {
         throw new Error(errorData.message || 'Failed to delete client');
       }
 
-      setSuccessMessage('Cliente excluído com sucesso!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      notifySuccess(
+        'Cliente Excluído!',
+        `O cliente "${clientName}" foi removido com sucesso.`
+      );
       fetchClients();
     } catch (error) {
       console.error('Error deleting client:', error);
+      notifyError(
+        'Erro ao Excluir Cliente',
+        `Não foi possível excluir o cliente "${clientName}". ${(error as Error).message}`
+      );
       setFormErrors({ general: (error as Error).message });
     } finally {
       setLoading(false);
@@ -368,7 +410,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa *</label>
               <input
                 type="text"
-                value={editingClient ? editingClient.company_name : newClient.company_name}
+                value={editingClient ? (editingClient.company_name || '') : newClient.company_name}
                 onChange={(e) => handleInputChange('company_name', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   formErrors.company_name ? 'border-red-500' : 'border-gray-300'
@@ -384,7 +426,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
               <input
                 type="text"
-                value={editingClient ? editingClient.cnpj : newClient.cnpj}
+                value={editingClient ? (editingClient.cnpj || '') : newClient.cnpj}
                 onChange={(e) => handleInputChange('cnpj', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   formErrors.cnpj ? 'border-red-500' : 'border-gray-300'
@@ -401,7 +443,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
               <input
                 type="email"
-                value={editingClient ? editingClient.email : newClient.email}
+                value={editingClient ? (editingClient.email || '') : newClient.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   formErrors.email ? 'border-red-500' : 'border-gray-300'
@@ -417,7 +459,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
               <input
                 type="text"
-                value={editingClient ? editingClient.phone : newClient.phone}
+                value={editingClient ? (editingClient.phone || '') : newClient.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="(11) 99999-9999"
@@ -428,7 +470,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Pessoa de Contato</label>
               <input
                 type="text"
-                value={editingClient ? editingClient.contact_person : newClient.contact_person}
+                value={editingClient ? (editingClient.contact_person || '') : newClient.contact_person}
                 onChange={(e) => handleInputChange('contact_person', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Nome do responsável"
@@ -439,7 +481,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
               <input
                 type="text"
-                value={editingClient ? editingClient.city : newClient.city}
+                value={editingClient ? (editingClient.city || '') : newClient.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Cidade"
@@ -450,7 +492,7 @@ const ClientsPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
               <input
                 type="text"
-                value={editingClient ? editingClient.state : newClient.state}
+                value={editingClient ? (editingClient.state || '') : newClient.state}
                 onChange={(e) => handleInputChange('state', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Estado"
@@ -463,7 +505,7 @@ const ClientsPage = () => {
               <div className="relative">
                 <input
                   type="text"
-                  value={editingClient ? editingClient.zip_code : newClient.zip_code}
+                  value={editingClient ? (editingClient.zip_code || '') : newClient.zip_code}
                   onChange={(e) => {
                     const value = e.target.value;
                     handleInputChange('zip_code', value);
@@ -616,6 +658,7 @@ const ClientsPage = () => {
           )}
         </div>
       </div>
+      <ConfirmationComponent />
     </div>
   );
 };

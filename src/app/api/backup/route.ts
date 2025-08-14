@@ -16,8 +16,8 @@ async function verifyAdmin(authToken: string) {
   const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
 
   try {
-    const [users] = await dbPool.execute<{ username: string; isAdmin: number | boolean }[]>(
-      'SELECT username, isAdmin FROM users WHERE username = ?',
+    const [users] = await dbPool.execute<{ username: string; is_admin: number | boolean }[]>(
+      'SELECT username, is_admin FROM users WHERE username = ?',
       [username]
     );
     
@@ -27,7 +27,7 @@ async function verifyAdmin(authToken: string) {
     
     const user = users[0];
     // Compatível com colunas BOOLEAN (true/false) e TINYINT(1) (0/1)
-    return Boolean(user.isAdmin);
+    return Boolean(user.is_admin);
   } catch (error) {
     logger.error('Erro ao verificar admin', error);
     return false;
@@ -39,8 +39,8 @@ export async function GET() {
   const startTime = Date.now();
   
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       logger.info('Tentativa de acesso não autorizado');
@@ -116,8 +116,8 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
   
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       logger.info('Tentativa de criação de backup não autorizada', { endpoint: '/api/backup' });
@@ -304,8 +304,8 @@ export async function POST(request: NextRequest) {
 // DELETE - Deletar backup
 export async function DELETE(request: Request) {
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

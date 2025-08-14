@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '../../../database.js';
+import { dbPool } from '@/utils/database-pool';
 import { cookies } from 'next/headers';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/redis';
+import { invalidateCacheByRoute } from '../../../middleware/cache';
 
 // GET - Listar todas as contas
 export async function GET(request: Request) {
-  let connection;
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -20,11 +21,9 @@ export async function GET(request: Request) {
     const type = searchParams.get('type'); // 'pagar' ou 'receber'
     const status = searchParams.get('status'); // 'pendente', 'pago', 'vencido'
     
-    connection = await connectToDatabase();
-    
-    // Buscar o usuário pelo username
-    const [userRows] = await connection.execute(
-      'SELECT id FROM users WHERE username = ?',
+    // Buscar o usuário pelo username - usando índice idx_users_username
+    const [userRows] = await dbPool.execute(
+      'SELECT id FROM users WHERE username = ? LIMIT 1',
       [username]
     ) as [{ id: number }[], unknown];
 
@@ -34,6 +33,13 @@ export async function GET(request: Request) {
 
     const userId = userRows[0].id;
     
+    // Verificar cache primeiro
+    const cacheKey = `${CACHE_KEYS.ACCOUNTS}:${username}:${type || 'all'}:${status || 'all'}`;
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData && typeof cachedData === 'string') {
+      return NextResponse.json(JSON.parse(cachedData));
+    }
+    
     let query = `
       SELECT 
         a.*,
@@ -42,6 +48,8 @@ export async function GET(request: Request) {
       JOIN users u ON a.user_id = u.id
       WHERE a.user_id = ?
     `;
+    
+    // Comentário: Query otimizada para usar índice idx_accounts_user_due_date
     
     const params: unknown[] = [userId];
     
@@ -57,14 +65,17 @@ export async function GET(request: Request) {
     
     query += ' ORDER BY a.due_date ASC';
     
-    const [rows] = await connection.execute(query, params) as [unknown[], unknown];
+    const [rows] = await dbPool.execute(query, params) as [unknown[], unknown];
     
-    // Atualizar status para vencido se necessário (apenas para o usuário logado)
+    // Atualizar status para vencido se necessário - usando índice idx_accounts_status_due_date
     const today = new Date().toISOString().split('T')[0];
-    await connection.execute(
-      "UPDATE accounts SET status = 'vencido' WHERE due_date < ? AND status = 'pendente' AND user_id = ?",
+    await dbPool.execute(
+      "UPDATE accounts SET status = 'vencido', updated_at = NOW() WHERE due_date < ? AND status = 'pendente' AND user_id = ?",
       [today, userId]
     );
+    
+    // Cache do resultado por 5 minutos
+    await cache.set(cacheKey, rows, CACHE_TTL.MEDIUM);
     
     return NextResponse.json(rows);
   } catch (error) {
@@ -73,17 +84,14 @@ export async function GET(request: Request) {
       { message: 'Error fetching accounts', error: (error as Error).message },
       { status: 500 }
     );
-  } finally {
-    if (connection) connection.end();
   }
 }
 
 // POST - Criar nova conta
 export async function POST(request: Request) {
-  let connection;
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -121,14 +129,12 @@ export async function POST(request: Request) {
       );
     }
 
-    connection = await connectToDatabase();
-
     // Extrair username do token (remover timestamp se presente)
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
     
-    // Buscar o usuário pelo username
-    const [userRows] = await connection.execute(
-      'SELECT id FROM users WHERE username = ?',
+    // Buscar o usuário pelo username - usando índice idx_users_username
+    const [userRows] = await dbPool.execute(
+      'SELECT id FROM users WHERE username = ? LIMIT 1',
       [username]
     ) as [{ id: number }[], unknown];
 
@@ -138,24 +144,28 @@ export async function POST(request: Request) {
 
     const userId = userRows[0].id;
 
-    // Inserir a conta
-    const [result] = await connection.execute(
+    // Inserir a conta - query otimizada com campos reordenados
+    const [result] = await dbPool.execute(
       `INSERT INTO accounts 
-       (type, description, amount, due_date, category, supplier_customer, notes, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [type, description, amount, due_date, category || null, supplier_customer || null, notes || null, userId]
+       (user_id, type, description, amount, due_date, category, supplier_customer, notes, created_at, updated_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [userId, type, description, amount, due_date, category || null, supplier_customer || null, notes || null]
     ) as [{ insertId: number }, unknown];
 
     // Vincular produtos à conta
     if (products && Array.isArray(products)) {
       for (const item of products) {
-        await connection.execute(
+        await dbPool.execute(
           'INSERT INTO account_products (account_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
           [result.insertId, item.product_id, item.quantity, item.price]
         );
       }
     }
 
+    // Invalidar cache após criação
+    await cache.del(`${CACHE_KEYS.ACCOUNTS}:${username}:*`);
+    await invalidateCacheByRoute('/api/accounts');
+    
     return NextResponse.json(
       { 
         message: 'Account created successfully',
@@ -169,7 +179,5 @@ export async function POST(request: Request) {
       { message: 'Error creating account', error: (error as Error).message },
       { status: 500 }
     );
-  } finally {
-    if (connection) connection.end();
   }
 }

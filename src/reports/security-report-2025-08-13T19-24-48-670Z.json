@@ -1,0 +1,408 @@
+{
+  "timestamp": "2025-08-13T19:24:48.670Z",
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 0,
+    "errors": 1,
+    "vulnerabilities": 0
+  },
+  "vulnerabilities": [],
+  "results": [
+    {
+      "test": "Security Headers",
+      "status": "ERROR",
+      "error": "Request failed with status code 429"
+    },
+    {
+      "test": "Authentication",
+      "status": "PASSED",
+      "tests": [
+        {
+          "route": "/dashboard",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "route": "/api/products",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "route": "/api/clients",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "route": "/api/movements",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "test": "Brute Force Protection",
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": 429,
+              "time": 1755113088133
+            },
+            {
+              "attempt": 2,
+              "status": 429,
+              "time": 1755113088143
+            },
+            {
+              "attempt": 3,
+              "status": 429,
+              "time": 1755113088152
+            },
+            {
+              "attempt": 4,
+              "status": 429,
+              "time": 1755113088162
+            },
+            {
+              "attempt": 5,
+              "status": 429,
+              "time": 1755113088172
+            }
+          ],
+          "status": "PROTECTED"
+        }
+      ]
+    },
+    {
+      "test": "SQL Injection",
+      "status": "PASSED",
+      "tests": [
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR '1'='1",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "'; DROP TABLE users; --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' UNION SELECT * FROM users --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "1' OR '1'='1' --",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "admin'--",
+          "status": "SAFE",
+          "response": 429
+        },
+        {
+          "endpoint": "/api/movements",
+          "payload": "' OR 1=1#",
+          "status": "SAFE",
+          "response": 429
+        }
+      ]
+    },
+    {
+      "test": "XSS",
+      "status": "PASSED",
+      "tests": [
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/products",
+          "field": "description",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "name",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "\"'><script>alert(\"XSS\")</script>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "javascript:alert(\"XSS\")",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<img src=x onerror=alert(\"XSS\")>",
+          "status": "SAFE"
+        },
+        {
+          "form": "/api/clients",
+          "field": "email",
+          "payload": "<svg onload=alert(\"XSS\")>",
+          "status": "SAFE"
+        }
+      ]
+    },
+    {
+      "test": "Information Disclosure",
+      "status": "PASSED",
+      "tests": [
+        {
+          "file": "/.env",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/.env.local",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/package.json",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/config.json",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/database.json",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/.git/config",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/backup.sql",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/admin",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/phpinfo.php",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        },
+        {
+          "file": "/server-status",
+          "status": "PROTECTED",
+          "httpStatus": 429
+        }
+      ]
+    }
+  ],
+  "recommendations": []
+}

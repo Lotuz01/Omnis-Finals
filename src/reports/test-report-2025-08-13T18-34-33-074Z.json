@@ -1,0 +1,73 @@
+{
+  "startTime": 1755110073075,
+  "endTime": 1755110113068,
+  "duration": 39993,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 48373760,
+      "heapTotal": 16068608,
+      "heapUsed": 8309272,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "failed",
+      "duration": 6722,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T18_34_39_650Z-debug-0.log\n"
+    },
+    "typecheck": {
+      "status": "failed",
+      "duration": 19121,
+      "output": "Command failed with code 1\nStdout: ../.next/types/app/api/certificado/route.ts(12,13): error TS2344: Type 'OmitWithTag<typeof import(\"C:/Users/Lotuz/Desktop/Nova pasta/src/app/api/certificado/route\"), \"POST\" | \"config\" | \"generateStaticParams\" | \"revalidate\" | \"dynamic\" | \"dynamicParams\" | ... 9 more ... | \"PATCH\", \"\">' does not satisfy the constraint '{ [x: string]: never; }'.\r\n  Property 'obterCertificadoService' is incompatible with index signature.\r\n    Type '() => CertificadoService | null' is not assignable to type 'never'.\r\napp/api/users/route.ts(55,16): error TS18046: 'error' is of type 'unknown'.\r\napp/api/users/route.ts(56,13): error TS18046: 'error' is of type 'unknown'.\r\napp/api/users/route.ts(57,14): error TS18046: 'error' is of type 'unknown'.\r\napp/api/users/route.ts(58,17): error TS18046: 'error' is of type 'unknown'.\r\napp/api/users/route.ts(59,19): error TS18046: 'error' is of type 'unknown'.\r\napp/api/users/route.ts(60,14): error TS18046: 'error' is of type 'unknown'.\r\n\nStderr: "
+    },
+    "build": {
+      "status": "failed",
+      "duration": 6611,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T18_35_05_398Z-debug-0.log\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 37,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 196,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 45,
+          "status": "success",
+          "result": true
+        },
+        {
+          "test": "Login com credenciais válidas",
+          "duration": 10,
+          "status": "error",
+          "error": "Login falhou: 307"
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[32m✅ Servidor respondendo: 45ms\u001b[0m\n\u001b[1m\n🔐 Testando Autenticação...\u001b[0m\n\u001b[31m❌ Login com credenciais válidas: ERRO - Login falhou: 307\u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: Login falhou: 307\u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 7302,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 2,
+    "failed": 3,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

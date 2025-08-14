@@ -5,6 +5,7 @@ import { logger } from './logger';
 
 interface PoolConfig {
   host: string;
+  port?: number;
   user: string;
   password: string;
   database: string;
@@ -23,11 +24,41 @@ class DatabasePool {
   private isInitialized = false;
 
   private constructor() {
+    console.error('🚨🚨🚨 [POOL-CONFIG] INICIALIZANDO POOL DE CONEXÕES 🚨🚨🚨');
+    console.error('🔧 [POOL-CONFIG] DB_HOST:', process.env.DB_HOST);
+    console.error('🔧 [POOL-CONFIG] DB_PORT:', process.env.DB_PORT);
+    console.error('🔧 [POOL-CONFIG] DB_USER:', process.env.DB_USER);
+    console.error('🔧 [POOL-CONFIG] DB_NAME:', process.env.DB_NAME);
+    console.error('🔧 [POOL-CONFIG] DB_PASSWORD definido:', !!process.env.DB_PASSWORD);
+    
+    // Forçar o uso das variáveis de ambiente corretas
+    const dbHost = process.env.DB_HOST;
+    const dbPort = process.env.DB_PORT;
+    const dbUser = process.env.DB_USER;
+    const dbPassword = process.env.DB_PASSWORD;
+    const dbName = process.env.DB_NAME;
+    
+    console.error('🔧 [POOL-CONFIG] Valores antes da configuração:');
+    console.error('🔧 [POOL-CONFIG] Host final:', dbHost);
+    console.error('🔧 [POOL-CONFIG] Port final:', dbPort);
+    console.error('🔧 [POOL-CONFIG] User final:', dbUser);
+    
+    if (!dbHost || !dbPort || !dbUser || !dbPassword || !dbName) {
+      console.error('❌ [POOL-CONFIG] ERRO: Variáveis de ambiente obrigatórias não definidas!');
+      console.error('❌ [POOL-CONFIG] DB_HOST:', dbHost);
+      console.error('❌ [POOL-CONFIG] DB_PORT:', dbPort);
+      console.error('❌ [POOL-CONFIG] DB_USER:', dbUser);
+      console.error('❌ [POOL-CONFIG] DB_PASSWORD definido:', !!dbPassword);
+      console.error('❌ [POOL-CONFIG] DB_NAME:', dbName);
+      throw new Error('Variáveis de ambiente do banco de dados não estão definidas corretamente');
+    }
+    
     this.config = {
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'pdv_system',
+      host: dbHost,
+      port: parseInt(dbPort),
+      user: dbUser,
+      password: dbPassword,
+      database: dbName,
       connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10'),
       acquireTimeout: parseInt(process.env.DB_ACQUIRE_TIMEOUT || '60000'),
       timeout: parseInt(process.env.DB_TIMEOUT || '60000'),
@@ -35,6 +66,14 @@ class DatabasePool {
       idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '300000'), // 5 minutos
       queueLimit: parseInt(process.env.DB_QUEUE_LIMIT || '0') // 0 = sem limite
     };
+    
+    console.error('🔧 [POOL-CONFIG] Configuração final do pool:', {
+      host: this.config.host,
+      port: this.config.port,
+      user: this.config.user,
+      database: this.config.database
+    });
+    console.error('🚨🚨🚨 [POOL-CONFIG] FIM DA CONFIGURAÇÃO 🚨🚨🚨');
   }
 
   public static getInstance(): DatabasePool {
@@ -52,6 +91,7 @@ class DatabasePool {
     try {
       this.pool = mysql.createPool({
         host: this.config.host,
+        port: this.config.port,
         user: this.config.user,
         password: this.config.password,
         database: this.config.database,
@@ -150,7 +190,6 @@ class DatabasePool {
       
       return connection;
     } catch (error) {
-      const duration = Date.now() - startTime;
       logger.error('Erro ao obter conexão do pool', error);
       throw error;
     }

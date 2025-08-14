@@ -25,7 +25,7 @@ async function createBackup() {
     // Criar diretório de backup se não existir
     try {
       await fs.mkdir(backupDir, { recursive: true });
-    } catch (error) {
+    } catch {
       // Diretório já existe
     }
     
@@ -73,7 +73,7 @@ async function restoreBackup(backupFilePath) {
     // Verificar se o arquivo existe
     try {
       await fs.access(backupFilePath);
-    } catch (error) {
+    } catch {
       throw new Error(`Arquivo de backup não encontrado: ${backupFilePath}`);
     }
     
@@ -160,7 +160,7 @@ async function listBackups() {
       
       return backups;
       
-    } catch (error) {
+    } catch {
       console.log('📁 Diretório de backups não existe ainda.');
       return [];
     }

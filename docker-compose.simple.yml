@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: sistema-gestao-app-simple
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - sistema-gestao-network
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: sistema_gestao_mysql_simple
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: sistema_gestao
+      MYSQL_USER: sistema_user
+      MYSQL_PASSWORD: sistema123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_simple:/var/lib/mysql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - sistema-gestao-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: sistema_gestao_redis_simple
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_simple:/data
+    networks:
+      - sistema-gestao-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sistema_gestao_phpmyadmin_simple
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root123
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - sistema-gestao-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data_simple:
+  redis_data_simple:
+
+networks:
+  sistema-gestao-network:
+    driver: bridge

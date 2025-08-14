@@ -46,10 +46,13 @@ export async function GET() {
 
     connection = await connectToDatabase();
     
-    // Buscar usuário pelo token
+    // Extrair username do token (remover timestamp se presente)
+    const username = authToken.value.includes('_') ? authToken.value.split('_')[0] : authToken.value;
+    
+    // Buscar usuário pelo username
     const [userRows] = await connection.execute(
-      'SELECT id FROM users WHERE id = ?',
-      [authToken.value]
+      'SELECT id FROM users WHERE username = ?',
+      [username]
     );
 
     if (!Array.isArray(userRows) || userRows.length === 0) {
@@ -116,10 +119,13 @@ export async function POST(request: Request) {
 
     connection = await connectToDatabase();
     
-    // Buscar usuário pelo token
+    // Extrair username do token (remover timestamp se presente)
+    const username = authToken.value.includes('_') ? authToken.value.split('_')[0] : authToken.value;
+    
+    // Buscar usuário pelo username
     const [userRows] = await connection.execute(
-      'SELECT id FROM users WHERE id = ?',
-      [authToken.value]
+      'SELECT id FROM users WHERE username = ?',
+      [username]
     );
 
     if (!Array.isArray(userRows) || userRows.length === 0) {
@@ -197,10 +203,13 @@ export async function PUT(request: Request) {
 
     connection = await connectToDatabase();
     
-    // Buscar usuário pelo token
+    // Extrair username do token (remover timestamp se presente)
+    const username = authToken.value.includes('_') ? authToken.value.split('_')[0] : authToken.value;
+    
+    // Buscar usuário pelo username
     const [userRows] = await connection.execute(
-      'SELECT id FROM users WHERE id = ?',
-      [authToken.value]
+      'SELECT id FROM users WHERE username = ?',
+      [username]
     );
 
     if (!Array.isArray(userRows) || userRows.length === 0) {
@@ -286,10 +295,13 @@ export async function DELETE(request: Request) {
 
     connection = await connectToDatabase();
     
-    // Buscar usuário pelo token
+    // Extrair username do token (remover timestamp se presente)
+    const username = authToken.value.includes('_') ? authToken.value.split('_')[0] : authToken.value;
+    
+    // Buscar usuário pelo username
     const [userRows] = await connection.execute(
-      'SELECT id FROM users WHERE id = ?',
-      [authToken.value]
+      'SELECT id FROM users WHERE username = ?',
+      [username]
     );
 
     if (!Array.isArray(userRows) || userRows.length === 0) {

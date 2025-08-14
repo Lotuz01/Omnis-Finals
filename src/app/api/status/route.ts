@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '../../../database';
+import { dbPool } from '../../../utils/database-pool';
 
 export async function GET() {
   try {
@@ -8,9 +8,7 @@ export async function GET() {
     let dbError = null;
     
     try {
-      const connection = await connectToDatabase();
-      await connection.execute('SELECT 1');
-      await connection.end();
+      await dbPool.execute('SELECT 1');
       dbStatus = 'connected';
     } catch (error) {
       dbError = error instanceof Error ? error.message : 'Unknown database error';

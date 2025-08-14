@@ -93,7 +93,7 @@ const UsersPage: React.FC = () => {
     setMessage('');
     setError('');
     try {
-      const response = await fetch(`/api/users?id=${id}`, {
+      const response = await fetch(`/api/users/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -124,7 +124,7 @@ const UsersPage: React.FC = () => {
               type="text"
               id="newUsername"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={newUser.username}
+              value={newUser.username || ''}
               onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
               required
             />
@@ -135,7 +135,7 @@ const UsersPage: React.FC = () => {
               type="password"
               id="newPassword"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={newUser.password}
+              value={newUser.password || ''}
               onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
               required
             />
@@ -146,7 +146,7 @@ const UsersPage: React.FC = () => {
               type="text"
               id="newName"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={newUser.name}
+              value={newUser.name || ''}
               onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
               required
             />
@@ -156,7 +156,7 @@ const UsersPage: React.FC = () => {
               type="checkbox"
               id="newIsAdmin"
               className="mr-2 leading-tight"
-              checked={newUser.isAdmin}
+              checked={newUser.isAdmin || false}
               onChange={(e) => setNewUser({ ...newUser, isAdmin: e.target.checked })}
             />
             <label htmlFor="newIsAdmin" className="text-sm text-gray-700">É Administrador</label>
@@ -222,7 +222,7 @@ const UsersPage: React.FC = () => {
                   type="text"
                   id="editUsername"
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={editingUser.username}
+                  value={editingUser.username || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
                   required
                 />
@@ -233,7 +233,7 @@ const UsersPage: React.FC = () => {
                   type="text"
                   id="editName"
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={editingUser.name}
+                  value={editingUser.name || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
                   required
                 />
@@ -244,7 +244,7 @@ const UsersPage: React.FC = () => {
                   type="password"
                   id="editPassword"
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newPassword}
+                  value={newPassword || ''}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Digite a nova senha"
                 />
@@ -254,7 +254,7 @@ const UsersPage: React.FC = () => {
                   type="checkbox"
                   id="editIsAdmin"
                   className="mr-2 leading-tight"
-                  checked={editingUser.isAdmin}
+                  checked={editingUser.isAdmin || false}
                   onChange={(e) => setEditingUser({ ...editingUser, isAdmin: e.target.checked })}
                 />
                 <label htmlFor="editIsAdmin" className="text-sm text-gray-700">É Administrador</label>

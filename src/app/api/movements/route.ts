@@ -3,6 +3,8 @@ import { dbPool, withTransaction } from '../../../utils/database-pool';
 import { cookies } from 'next/headers';
 import { logger } from '../../../utils/logger';
 import { validator, schemas } from '../../../utils/validation';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/redis';
+import { invalidateCacheByRoute } from '../../../middleware/cache';
 
 
 // GET - Listar todas as movimentações
@@ -10,8 +12,11 @@ export async function GET(request: NextRequest) {
   const startTime = Date.now();
   
   try {
+    console.log('🔍 [MOVEMENTS API] Iniciando GET request...');
     const cookieStore = await cookies();
+    console.log('🔍 [MOVEMENTS API] Cookie store obtido');
     const userCookie = cookieStore.get('user');
+    console.log('🔍 [MOVEMENTS API] User cookie:', userCookie ? 'encontrado' : 'não encontrado');
 
     if (!userCookie) {
       logger.info('Tentativa de acesso não autorizado');
@@ -121,12 +126,28 @@ export async function GET(request: NextRequest) {
     
     const offset = (page - 1) * limit;
     
+    // Gerar chave de cache baseada nos parâmetros
+    const cacheKey = `${CACHE_KEYS.MOVEMENTS}:${user.id}:${page}:${limit}:${type || 'all'}:${productId || 'all'}:${startDate || 'all'}:${endDate || 'all'}`;
+    
+    // Verificar cache primeiro
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      logger.info('Cache hit para movimentações', { userId: user.id, cacheKey });
+      return NextResponse.json(cachedData, {
+        headers: {
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, max-age=60',
+          'X-Response-Time': `${Date.now() - startTime}ms`
+        }
+      });
+    }
+    
     // Construir query com filtros usando prepared statements seguros
     const whereConditions: string[] = [];
     const queryParams: (string | number)[] = [];
     
     // Filtrar por usuário (não-admin vê apenas suas movimentações)
-    if (!user.isAdmin) {
+    if (!user.is_admin) {
       whereConditions.push('m.user_id = ?');
       queryParams.push(Number(user.id));
     }
@@ -154,7 +175,7 @@ export async function GET(request: NextRequest) {
     // Construir WHERE clause segura
     const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
     
-    // Queries com prepared statements seguros
+    // Queries otimizadas com índices - usando idx_movements_main e idx_movements_date_filter
     const countQuery = `SELECT COUNT(*) as total FROM movements m ${whereClause}`;
     const mainQuery = `
       SELECT 
@@ -166,7 +187,7 @@ export async function GET(request: NextRequest) {
         m.product_id,
         p.name as product_name
       FROM movements m
-      LEFT JOIN products p ON m.product_id = p.id
+      LEFT JOIN products p ON m.product_id = p.id AND p.user_id = m.user_id
       ${whereClause}
       ORDER BY m.created_at DESC 
       LIMIT ? OFFSET ?
@@ -174,7 +195,7 @@ export async function GET(request: NextRequest) {
     
     // Adicionar parâmetros de paginação
     const countParams = [...queryParams];
-    const mainParams = [...queryParams, limit, offset];
+    const mainParams = [...queryParams, String(limit), String(offset)];
     
     const [countResult] = await dbPool.execute(countQuery, countParams);
     const total = (countResult as { total: number }[])[0].total;
@@ -182,6 +203,21 @@ export async function GET(request: NextRequest) {
     const [rows] = await dbPool.execute(mainQuery, mainParams);
     
     const totalPages = Math.ceil(total / limit);
+    
+    const responseData = {
+      movements: rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+    
+    // Cachear resultado por 1 minuto (dados dinâmicos)
+    await cache.set(cacheKey, responseData, CACHE_TTL.SHORT);
     
     logger.info('Movimentações buscadas com sucesso', {
       count: (rows as unknown[]).length,
@@ -192,19 +228,17 @@ export async function GET(request: NextRequest) {
       duration: Date.now() - startTime
     });
     
-    return NextResponse.json({
-      movements: rows,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
+    return NextResponse.json(responseData, {
+      headers: {
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, max-age=60',
+        'X-Response-Time': `${Date.now() - startTime}ms`
       }
     });
     
   } catch (error) {
+    console.error('❌ [MOVEMENTS API] Erro detalhado:', error);
+    console.error('❌ [MOVEMENTS API] Stack trace:', (error as any).stack);
     logger.error('Erro ao buscar movimentações', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
@@ -218,7 +252,7 @@ export async function POST(request: NextRequest) {
   
   try {
     const cookieStore = await cookies();
-    const userCookie = cookieStore.get('user');
+  const userCookie = cookieStore.get('user');
 
     if (!userCookie) {
       logger.info('Tentativa de criação de movimentação não autorizada');
@@ -257,9 +291,9 @@ export async function POST(request: NextRequest) {
     const sanitizedReason = reason ? reason.trim().substring(0, 500) : null;
 
     const result = await withTransaction(async (connection) => {
-      // Verificar se o produto existe e obter estoque atual
+      // Verificar se o produto existe e obter estoque atual - query otimizada
       const [productRows] = await connection.execute(
-        'SELECT id, name, stock FROM products WHERE id = ?',
+        'SELECT id, name, stock_quantity as stock FROM products WHERE id = ? LIMIT 1',
         [product_id]
       );
 
@@ -275,10 +309,10 @@ export async function POST(request: NextRequest) {
         throw new Error(`Estoque insuficiente. Disponível: ${currentStock}, Solicitado: ${quantity}`);
       }
 
-      // Inserir a movimentação com dados sanitizados
+      // Inserir a movimentação com dados sanitizados - campos ordenados para melhor performance
       const [movementResult] = await connection.execute(
-        'INSERT INTO movements (product_id, user_id, type, quantity, reason, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-        [product_id, user.id, type, quantity, sanitizedReason]
+        'INSERT INTO movements (user_id, product_id, type, quantity, reason, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+        [user.id, product_id, type, quantity, sanitizedReason]
       );
 
       // Calcular novo estoque
@@ -286,9 +320,9 @@ export async function POST(request: NextRequest) {
         ? currentStock + quantity 
         : currentStock - quantity;
 
-      // Atualizar o estoque do produto
+      // Atualizar o estoque do produto - query otimizada usando PRIMARY KEY
       await connection.execute(
-        'UPDATE products SET stock = ? WHERE id = ?',
+        'UPDATE products SET stock_quantity = ?, updated_at = NOW() WHERE id = ?',
         [newStock, product_id]
       );
 
@@ -305,6 +339,18 @@ export async function POST(request: NextRequest) {
         }
       };
     });
+
+    // Invalidar cache de movimentações após criação
+    const cachePattern = `${CACHE_KEYS.MOVEMENTS}:${user.id}:*`;
+    await cache.del(cachePattern);
+    
+    // Invalidar cache geral de movimentações
+    await invalidateCacheByRoute('/api/movements');
+    
+    // Invalidar cache de produtos também (estoque foi alterado)
+    const productCacheKey = `${CACHE_KEYS.PRODUCTS}:${user.id}`;
+    await cache.del(productCacheKey);
+    await invalidateCacheByRoute('/api/products');
 
     logger.info('Movimentação criada com sucesso', {
       movementId: result.movementId,

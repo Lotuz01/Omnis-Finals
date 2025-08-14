@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useNotify } from '@/contexts/notifications-context';
 
 interface Product {
   id: number;
   name: string;
   description: string;
   price: number;
-  stock: number;
+  stock_quantity: number;
 }
 
 const ProductsPage = () => {
@@ -17,11 +18,12 @@ const ProductsPage = () => {
     name: '',
     description: '',
     price: 0,
-    stock: 0,
+    stock_quantity: 0,
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotify();
 
   useEffect(() => {
     fetchProducts();
@@ -39,8 +41,42 @@ const ProductsPage = () => {
         price: parseFloat(product.price.toString()),
       }));
       setProducts(productsWithParsedPrice);
+      
+      // Verificar produtos com estoque baixo
+      const lowStockProducts = productsWithParsedPrice.filter((product: Product) => product.stock_quantity <= 5 && product.stock_quantity > 0);
+  const outOfStockProducts = productsWithParsedPrice.filter((product: Product) => product.stock_quantity === 0);
+      
+      if (outOfStockProducts.length > 0) {
+        notifyWarning(
+          'Produtos Sem Estoque!',
+          `${outOfStockProducts.length} produto(s) estão sem estoque: ${outOfStockProducts.map((p: Product) => p.name).join(', ')}.`,
+          {
+            label: 'Ver Produtos',
+            onClick: () => {
+              const element = document.getElementById('products-list');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        );
+      } else if (lowStockProducts.length > 0) {
+        notifyInfo(
+          'Estoque Baixo',
+          `${lowStockProducts.length} produto(s) com estoque baixo (≤5 unidades): ${lowStockProducts.map((p: Product) => p.name).join(', ')}.`,
+          {
+            label: 'Ver Produtos',
+            onClick: () => {
+              const element = document.getElementById('products-list');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        );
+      }
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      notifyError(
+        'Erro ao Carregar Produtos',
+        'Não foi possível carregar a lista de produtos. Verifique sua conexão e tente novamente.'
+      );
     }
   };
 
@@ -54,8 +90,8 @@ const ProductsPage = () => {
     if (newProduct.price <= 0 || isNaN(newProduct.price)) {
       errors.price = 'O preço deve ser um número positivo.';
     }
-    if (newProduct.stock < 0 || isNaN(newProduct.stock)) {
-      errors.stock = 'O estoque deve ser um número não negativo.';
+    if (newProduct.stock_quantity < 0 || isNaN(newProduct.stock_quantity)) {
+      errors.stock_quantity = 'O estoque deve ser um número não negativo.';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -81,21 +117,30 @@ const ProductsPage = () => {
       const responseData = await res.json();
       
       if (responseData.message === 'Product stock updated') {
-        setSuccessMessage(`Estoque atualizado! Produto "${newProduct.name}" teve seu estoque aumentado de ${responseData.previousStock} para ${responseData.newStock} (+${responseData.addedStock} unidades).`);
+        notifySuccess(
+          'Estoque Atualizado!',
+          `Produto "${newProduct.name}" teve seu estoque aumentado de ${responseData.previousStock} para ${responseData.newStock} (+${responseData.addedStock} unidades).`
+        );
       } else {
-        setSuccessMessage(`Produto "${newProduct.name}" adicionado com sucesso!`);
+        notifySuccess(
+          'Produto Adicionado!',
+          `Produto "${newProduct.name}" foi adicionado com sucesso ao catálogo.`,
+          {
+            label: 'Ver Produtos',
+            onClick: () => window.location.reload()
+          }
+        );
       }
       
-      setNewProduct({ name: '', description: '', price: 0, stock: 0 });
+      setNewProduct({ name: '', description: '', price: 0, stock_quantity: 0 });
       fetchProducts();
-      
-      // Limpar mensagem de sucesso após 5 segundos
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 5000);
     } catch (error: unknown) {
       console.error('Failed to add product:', error);
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro inesperado.';
+      notifyError(
+        'Erro ao Adicionar Produto',
+        `Não foi possível adicionar o produto "${newProduct.name}". ${errorMessage}`
+      );
       setFormErrors({ api: errorMessage });
     }
   };
@@ -118,14 +163,25 @@ const ProductsPage = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
+      notifySuccess(
+        'Produto Atualizado!',
+        `As informações do produto "${editingProduct.name}" foram atualizadas com sucesso.`
+      );
       setEditingProduct(null);
       fetchProducts();
     } catch (error) {
       console.error('Failed to update product:', error);
+      notifyError(
+        'Erro ao Atualizar Produto',
+        `Não foi possível atualizar o produto "${editingProduct.name}". Tente novamente.`
+      );
     }
   };
 
   const handleDeleteProduct = async (id: number) => {
+    const product = products.find(p => p.id === id);
+    const productName = product?.name || 'Produto';
+    
     try {
       const res = await fetch('/api/products', {
         method: 'DELETE',
@@ -137,9 +193,17 @@ const ProductsPage = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
+      notifySuccess(
+        'Produto Removido!',
+        `O produto "${productName}" foi removido do catálogo.`
+      );
       fetchProducts();
     } catch (error) {
       console.error('Failed to delete product:', error);
+      notifyError(
+        'Erro ao Remover Produto',
+        `Não foi possível remover o produto "${productName}". Tente novamente.`
+      );
     }
   };
 
@@ -201,23 +265,23 @@ const ProductsPage = () => {
               {formErrors.price && <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>}
             </div>
             <div>
-              <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700">
                 Estoque
               </label>
               <input
                 type="number"
-                id="stock"
-                value={newProduct.stock || ''}
+                id="stock_quantity"
+                value={newProduct.stock_quantity || ''}
                 onChange={(e) =>
                   setNewProduct({
                     ...newProduct,
-                    stock: parseInt(e.target.value) || 0,
+                    stock_quantity: parseInt(e.target.value) || 0,
                   })
                 }
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                 required
               />
-              {formErrors.stock && <p className="text-red-500 text-xs mt-1">{formErrors.stock}</p>}
+              {formErrors.stock_quantity && <p className="text-red-500 text-xs mt-1">{formErrors.stock_quantity}</p>}
             </div>
             {formErrors.api && <p className="text-red-500 text-xs mt-1">{formErrors.api}</p>}
             {successMessage && <p className="text-green-600 text-sm mt-2 p-2 bg-green-50 border border-green-200 rounded">{successMessage}</p>}
@@ -232,7 +296,7 @@ const ProductsPage = () => {
       </section>
 
       {/* Product Listing Section */}
-      <section className="mb-8">
+      <section id="products-list" className="mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4">Lista de Produtos</h2>
         <div className="bg-white shadow rounded-lg p-2 sm:p-4">
           {products.length === 0 ? (
@@ -256,7 +320,7 @@ const ProductsPage = () => {
                     
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-sm text-gray-500">
-                        Estoque: <span className="font-medium text-gray-900">{product.stock}</span>
+                        Estoque: <span className="font-medium text-gray-900">{product.stock_quantity}</span>
                       </span>
                     </div>
                     
@@ -306,7 +370,7 @@ const ProductsPage = () => {
                         </td>
                         <td className="py-3 px-4 border-b text-center">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            {product.stock}
+                            {product.stock_quantity}
                           </span>
                         </td>
                         <td className="py-3 px-4 border-b text-center">
@@ -348,7 +412,7 @@ const ProductsPage = () => {
                 <input
                   type="text"
                   id="edit-name"
-                  value={editingProduct.name}
+                  value={editingProduct.name || ''}
                   onChange={(e) =>
                     setEditingProduct({ ...editingProduct, name: e.target.value })
                   }
@@ -362,7 +426,7 @@ const ProductsPage = () => {
                 </label>
                 <textarea
                   id="edit-description"
-                  value={editingProduct.description}
+                  value={editingProduct.description || ''}
                   onChange={(e) =>
                     setEditingProduct({ ...editingProduct, description: e.target.value })
                   }
@@ -389,17 +453,17 @@ const ProductsPage = () => {
                 />
               </div>
               <div>
-                <label htmlFor="edit-stock" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="edit-stock_quantity" className="block text-sm font-medium text-gray-700">
                   Estoque
                 </label>
                 <input
                   type="number"
-                  id="edit-stock"
-                  value={editingProduct.stock || ''}
+                  id="edit-stock_quantity"
+                  value={editingProduct.stock_quantity || ''}
                   onChange={(e) =>
                     setEditingProduct({
                       ...editingProduct,
-                      stock: parseInt(e.target.value) || 0,
+                      stock_quantity: parseInt(e.target.value) || 0,
                     })
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"

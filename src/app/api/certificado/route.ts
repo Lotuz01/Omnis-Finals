@@ -535,9 +535,10 @@ export async function inicializarCertificadoDoEnvironment(): Promise<boolean> {
 }
 
 // Inicializar certificado automaticamente se as variáveis estiverem configuradas
-if (typeof window === 'undefined') {
-  // Executar apenas no servidor
-  inicializarCertificadoDoEnvironment().catch(error => {
-    console.error('[API Certificado] Erro na inicialização automática:', error);
-  });
-}
+// COMENTADO: Causava erro na tela branca quando certificado não estava configurado
+// if (typeof window === 'undefined') {
+//   // Executar apenas no servidor
+//   inicializarCertificadoDoEnvironment().catch(error => {
+//     console.error('[API Certificado] Erro na inicialização automática:', error);
+//   });
+// }

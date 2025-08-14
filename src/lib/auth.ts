@@ -9,14 +9,6 @@ interface ExtendedUser {
   isAdmin: boolean;
 }
 
-interface ExtendedSession {
-  user: {
-    id: string;
-    username: string;
-    isAdmin: boolean;
-  };
-}
-
 interface ExtendedToken {
   isAdmin: boolean;
   [key: string]: unknown;
@@ -40,7 +32,7 @@ export const authOptions: NextAuthOptions = {
           const [rows] = await connection.execute(
             'SELECT * FROM users WHERE username = ?',
             [credentials.username]
-          ) as [{ id: number; username: string; password: string; name: string; isAdmin: number }[], unknown];
+          ) as [{ id: number; username: string; password: string; name: string; is_admin: number }[], unknown];
 
           if (rows.length === 0) {
             connection.end();
@@ -60,7 +52,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id.toString(),
             name: user.name || user.username,
             email: user.username,
-            isAdmin: Boolean(user.isAdmin)
+            isAdmin: Boolean(user.is_admin)
           };
         } catch (error) {
           console.error('Auth error:', error);

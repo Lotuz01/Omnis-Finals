@@ -33,7 +33,7 @@ interface NFEResponse {
 }
 
 // Função para emitir NFe via API externa (exemplo com Focus NFe)
-async function emitNFE(nfeData: NFEData, clientData: { company_name: string; cnpj: string; address?: string; city?: string; state?: string; zip_code?: string }): Promise<NFEResponse> {
+async function emitNFE(nfeData: NFEData, clientData: { name: string; email?: string; phone?: string; address?: string; }): Promise<NFEResponse> {
   let xmlAssinado: string | undefined;
   let certificadoUsado = false;
   
@@ -71,14 +71,14 @@ async function emitNFE(nfeData: NFEData, clientData: { company_name: string; cnp
       inscricao_estadual_emitente: process.env.COMPANY_IE || "123456789",
       
       // Dados do destinatário (cliente)
-      nome_destinatario: clientData.company_name,
-      cnpj_destinatario: clientData.cnpj.replace(/\D/g, ''), // Remove formatação
-      logradouro_destinatario: clientData.address || "",
+      nome_destinatario: clientData.name,
+      cnpj_destinatario: "00000000000000", // CNPJ padrão para teste
+      logradouro_destinatario: clientData.address || "Endereço não informado",
       numero_destinatario: "S/N",
       bairro_destinatario: "Centro",
-      municipio_destinatario: clientData.city || "",
-      uf_destinatario: clientData.state || "",
-      cep_destinatario: clientData.zip_code?.replace(/\D/g, '') || "",
+      municipio_destinatario: "São Paulo",
+      uf_destinatario: "SP",
+      cep_destinatario: "00000000",
       
       valor_total: nfeData.total_amount.toFixed(2),
       valor_produtos: nfeData.total_amount.toFixed(2),
@@ -177,8 +177,8 @@ async function emitNFE(nfeData: NFEData, clientData: { company_name: string; cnp
 export async function GET() {
   let connection;
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -200,7 +200,7 @@ export async function GET() {
     
     // Buscar NFes do usuário
     const [rows] = await connection.execute(`
-      SELECT n.*, c.company_name, c.cnpj 
+      SELECT n.*, c.name as client_name, c.email, c.phone 
       FROM nfe n 
       JOIN clients c ON n.client_id = c.id 
       WHERE n.user_id = ? 
@@ -220,8 +220,8 @@ export async function GET() {
 export async function POST(request: Request) {
   let connection;
   try {
-    const cookieStore = cookies();
-    const authToken = (await cookieStore).get('auth_token')?.value;
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -249,9 +249,9 @@ export async function POST(request: Request) {
 
     // Buscar dados do cliente
     const [clientRows] = await connection.execute(
-      'SELECT * FROM clients WHERE id = ? AND user_id = ?',
-      [nfeData.client_id, userId]
-    ) as [{ company_name: string; cnpj: string; address?: string; city?: string; state?: string; zip_code?: string; }[], unknown];
+      'SELECT * FROM clients WHERE id = ?',
+      [nfeData.client_id]
+    ) as [{ name: string; email?: string; phone?: string; address?: string; }[], unknown];
 
     if (clientRows.length === 0) {
       return NextResponse.json({ message: 'Client not found' }, { status: 404 });

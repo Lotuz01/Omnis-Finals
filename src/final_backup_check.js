@@ -93,7 +93,7 @@ async function finalBackupCheck() {
       try {
         const backupList = JSON.parse(listResponse.data);
         console.log(`   Backups listados: ${Array.isArray(backupList) ? backupList.length : 'formato inválido'}`);
-      } catch (e) {
+      } catch {
         console.log('   Resposta não é JSON válido');
       }
     } else {

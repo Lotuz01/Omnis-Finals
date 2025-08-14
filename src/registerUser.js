@@ -1,7 +1,7 @@
 async function registerUser() {
-  const username = "Wendel";
+  const username = "01";
   const password = "Gengar1509@";
-  const name = "Wendel Silva";
+  const name = "Usuário 01";
 
   try {
     const response = await fetch('http://localhost:3000/api/register', {

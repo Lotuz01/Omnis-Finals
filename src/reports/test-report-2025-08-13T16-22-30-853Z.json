@@ -1,0 +1,67 @@
+{
+  "startTime": 1755102150853,
+  "endTime": 1755102191342,
+  "duration": 40489,
+  "environment": {
+    "node": "v20.9.0",
+    "platform": "win32",
+    "arch": "x64",
+    "memory": {
+      "rss": 47935488,
+      "heapTotal": 16068608,
+      "heapUsed": 8387848,
+      "external": 2251596,
+      "arrayBuffers": 16667
+    }
+  },
+  "tests": {
+    "lint": {
+      "status": "failed",
+      "duration": 6787,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T16_22_37_496Z-debug-0.log\n"
+    },
+    "typecheck": {
+      "status": "passed",
+      "duration": 7415,
+      "output": ""
+    },
+    "build": {
+      "status": "failed",
+      "duration": 6760,
+      "output": "Command failed with code 4294963238\nStdout: \nStderr: npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json\nnpm ERR! errno -4058\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\Lotuz\\Desktop\\Nova pasta\\src\\package.json'\nnpm ERR! enoent This is related to npm not being able to find a file.\nnpm ERR! enoent \n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\Lotuz\\AppData\\Local\\npm-cache\\_logs\\2025-08-13T16_22_51_672Z-debug-0.log\n"
+    },
+    "performance": {
+      "status": "passed",
+      "duration": 48,
+      "results": [],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE PERFORMANCE E FUNCIONALIDADE\u001b[0m\n\u001b[34m============================================================\u001b[0m\n\u001b[31m❌ Erro ao conectar com banco: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n\u001b[31m❌ Erro durante os testes: Access denied for user 'root'@'localhost' (using password: NO)\u001b[0m\n"
+    },
+    "integration": {
+      "status": "passed",
+      "duration": 12066,
+      "results": [
+        {
+          "test": "Servidor respondendo",
+          "duration": 7051,
+          "status": "error",
+          "error": "Status inesperado: 500"
+        }
+      ],
+      "output": "\u001b[1m🚀 INICIANDO TESTES DE INTEGRAÇÃO\u001b[0m\n\u001b[34m==================================================\u001b[0m\n\u001b[1m\n🌐 Testando Conectividade...\u001b[0m\n\u001b[31m❌ Servidor respondendo: ERRO - Status inesperado: 500\u001b[0m\n\u001b[31m❌ Erro crítico durante os testes: Status inesperado: 500\u001b[0m\n"
+    },
+    "security": {
+      "status": "warning",
+      "duration": 7409,
+      "issues": [
+        "Arquivo sensível encontrado: .env.local"
+      ]
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 3,
+    "failed": 2,
+    "warnings": 1,
+    "readyForProduction": false
+  }
+}

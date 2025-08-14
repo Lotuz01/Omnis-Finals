@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../../database';
+import { getApiMetrics } from '../../../lib/metrics';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/redis';
 import os from 'os';
 
 interface Metrics {
@@ -43,24 +45,7 @@ interface Metrics {
   };
 }
 
-// Simples contador de requisições (em produção, usar Redis ou banco)
-let requestCount = 0;
-let totalResponseTime = 0;
-let activeConnections = 0;
 
-// Middleware para contar requisições (seria implementado globalmente)
-export function trackRequest(responseTime: number) {
-  requestCount++;
-  totalResponseTime += responseTime;
-}
-
-export function incrementActiveConnections() {
-  activeConnections++;
-}
-
-export function decrementActiveConnections() {
-  activeConnections--;
-}
 
 async function getDatabaseMetrics() {
   const start = Date.now();
@@ -120,16 +105,23 @@ function getApplicationMetrics() {
   };
 }
 
-function getApiMetrics() {
-  return {
-    totalRequests: requestCount,
-    activeConnections: Math.max(0, activeConnections),
-    averageResponseTime: requestCount > 0 ? Math.round((totalResponseTime / requestCount) * 100) / 100 : 0
-  };
-}
+
 
 export async function GET() {
   try {
+    // Verificar cache primeiro - cache por 30 segundos para métricas
+    const cacheKey = 'metrics:system';
+    const cachedMetrics = await cache.get(cacheKey);
+    if (cachedMetrics) {
+      return NextResponse.json(cachedMetrics, {
+        status: 200,
+        headers: {
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, max-age=30'
+        }
+      });
+    }
+    
     const [database, system, application, api] = await Promise.all([
       getDatabaseMetrics(),
       Promise.resolve(getSystemMetrics()),
@@ -145,12 +137,14 @@ export async function GET() {
       api
     };
     
+    // Armazenar no cache por 30 segundos
+    await cache.set(cacheKey, metrics, 30);
+    
     return NextResponse.json(metrics, {
       status: 200,
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, max-age=30'
       }
     });
   } catch (error) {

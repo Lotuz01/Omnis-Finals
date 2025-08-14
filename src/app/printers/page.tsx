@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useConfirmation } from '@/components/ui/confirmation-modal';
 
 interface Printer {
   id: number;
@@ -51,6 +52,7 @@ export default function PrintersPage() {
   const [activeTab, setActiveTab] = useState<'config' | 'test' | 'logs'>('config');
   const [showForm, setShowForm] = useState(false);
   const [editingPrinter, setEditingPrinter] = useState<Printer | null>(null);
+  const { confirm, ConfirmationComponent } = useConfirmation();
 
 
   const [formData, setFormData] = useState({
@@ -276,7 +278,18 @@ export default function PrintersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir esta impressora?')) return;
+    const printer = printers.find(p => p.id === id);
+    const printerName = printer?.name || 'Impressora';
+    
+    const confirmed = await confirm({
+      title: 'Excluir Impressora',
+      message: `Tem certeza que deseja excluir a impressora "${printerName}"?`,
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/printers?id=${id}`, {
@@ -903,6 +916,7 @@ export default function PrintersPage() {
           </div>
         </div>
       </div>
+      <ConfirmationComponent />
     </div>
   );
 }

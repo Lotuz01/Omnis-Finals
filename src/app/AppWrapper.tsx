@@ -2,7 +2,9 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import Layout from './components/Layout';
+import ModernLayout from './components/ModernLayout';
+import { Toaster } from '@/components/ui/sonner';
+import { NotificationsProvider } from '@/contexts/notifications-context';
 
 export default function AppWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -54,14 +56,15 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <>
+    <NotificationsProvider>
       {isLoginPage ? (
         children
       ) : (
-        <Layout userName={userName} isAdmin={isAdmin}>
+        <ModernLayout userName={userName} isAdmin={isAdmin}>
           {children}
-        </Layout>
+        </ModernLayout>
       )}
-    </>
+      <Toaster />
+    </NotificationsProvider>
   );
 }

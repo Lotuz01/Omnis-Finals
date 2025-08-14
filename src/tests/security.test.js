@@ -105,7 +105,8 @@ class SecurityTester {
         try {
           const response = await axios.get(`${BASE_URL}${route}`, { 
             timeout: TIMEOUT,
-            validateStatus: () => true // Não lançar erro para status HTTP
+            validateStatus: () => true, // Não lançar erro para status HTTP
+            maxRedirects: 0 // Não seguir redirecionamentos
           });
           
           if (response.status === 200) {

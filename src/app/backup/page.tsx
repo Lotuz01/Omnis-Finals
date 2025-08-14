@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useConfirmation } from '@/components/ui/confirmation-modal';
 
 interface Backup {
   filename: string;
@@ -19,6 +20,7 @@ export default function BackupPage() {
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+  const { confirm, ConfirmationComponent } = useConfirmation();
 
   const loadBackups = useCallback(async () => {
     try {
@@ -94,7 +96,15 @@ export default function BackupPage() {
   };
 
   const restoreBackup = async (filename: string) => {
-    if (!confirm(`Tem certeza que deseja restaurar o backup "${filename}"? Todos os dados atuais serão substituídos!`)) {
+    const confirmed = await confirm({
+      title: 'Restaurar Backup',
+      message: `Tem certeza que deseja restaurar o backup "${filename}"? Todos os dados atuais serão substituídos!`,
+      confirmText: 'Restaurar',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (!confirmed) {
       return;
     }
 
@@ -124,7 +134,15 @@ export default function BackupPage() {
 
   const deleteBackup = async (filename: string) => {
     console.log('🗑️ [WEB] deleteBackup chamado para:', filename);
-    if (!confirm(`Tem certeza que deseja deletar o backup "${filename}"?`)) {
+    const confirmed = await confirm({
+      title: 'Deletar Backup',
+      message: `Tem certeza que deseja deletar o backup "${filename}"?`,
+      confirmText: 'Deletar',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (!confirmed) {
       return;
     }
 
@@ -265,6 +283,7 @@ export default function BackupPage() {
           </div>
         </div>
       </div>
+      <ConfirmationComponent />
     </div>
   );
 }

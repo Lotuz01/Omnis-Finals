@@ -34,3 +34,4 @@ Thumbs.db
 # Ignorar diretórios de build
 build/
 dist/
+node_modules

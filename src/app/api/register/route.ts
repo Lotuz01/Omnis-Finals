@@ -1,9 +1,8 @@
-import { connectToDatabase } from '../../../database';
+import { dbPool } from '../../../utils/database-pool';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  let connection;
   try {
     const { username, password, name, isAdmin } = await request.json();
 
@@ -11,10 +10,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Missing username, password or name' }, { status: 400 });
     }
 
-    connection = await connectToDatabase();
-
     // Check if user already exists
-    const [existingUsers]: unknown[] = await connection.execute(
+    const [existingUsers]: unknown[] = await dbPool.execute(
       'SELECT * FROM users WHERE username = ?', [username]
     );
 
@@ -24,8 +21,8 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10); // Hash password with salt rounds = 10
 
-    await connection.execute(
-      'INSERT INTO users (username, password, name, isAdmin) VALUES (?, ?, ?, ?)',
+    await dbPool.execute(
+      'INSERT INTO users (username, password, name, is_admin) VALUES (?, ?, ?, ?)',
       [username, hashedPassword, name, isAdmin || false]
     );
 
@@ -34,7 +31,5 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error('Error during user registration:', error);
     return NextResponse.json({ message: 'Internal server error', error: (error as Error).message }, { status: 500 });
-  } finally {
-    if (connection) connection.end();
   }
 }

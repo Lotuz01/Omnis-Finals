@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '../../../../../database.js';
+import { dbPool } from '@/utils/database-pool';
 import { cookies } from 'next/headers';
+import { cache, CACHE_KEYS } from '../../../../../lib/redis';
+import { invalidateCacheByRoute } from '../../../../../middleware/cache';
 
 // POST - Registrar pagamento de uma conta
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let connection;
   try {
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;
@@ -31,13 +32,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
-    connection = await connectToDatabase();
-
-    // Verificar se a conta existe e está pendente
-    const [accountRows] = await connection.execute(
-      'SELECT * FROM accounts WHERE id = ?',
+    // Verificar se a conta existe - usando PRIMARY KEY
+    const [accountRows] = await dbPool.execute(
+      'SELECT id, status, amount, payment_amount, notes FROM accounts WHERE id = ? LIMIT 1',
       [accountId]
-    ) as [{ id: number; status: string; amount: number; [key: string]: unknown }[], unknown];
+    ) as [{ id: number; status: string; amount: number; payment_amount?: number; notes?: string }[], unknown];
 
     if (accountRows.length === 0) {
       return NextResponse.json({ message: 'Account not found' }, { status: 404 });
@@ -77,13 +76,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       newStatus = 'parcialmente_pago';
     }
 
-    // Atualizar a conta com o pagamento
-    await connection.execute(
+    // Atualizar a conta com o pagamento - usando PRIMARY KEY
+    await dbPool.execute(
       `UPDATE accounts 
-       SET status = ?, payment_date = ?, payment_amount = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+       SET status = ?, payment_date = ?, payment_amount = ?, notes = ?, updated_at = NOW()
        WHERE id = ?`,
       [newStatus, payment_date, totalPaid.toFixed(2), notes || account.notes, accountId]
     );
+    
+    // Invalidar cache após pagamento
+    await cache.del(`${CACHE_KEYS.ACCOUNTS}:*`);
+    await invalidateCacheByRoute('/api/accounts');
 
     return NextResponse.json(
       { message: 'Payment registered successfully' },
@@ -95,7 +98,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       { message: 'Error registering payment', error: (error as Error).message },
       { status: 500 }
     );
-  } finally {
-    if (connection) connection.end();
   }
 }

@@ -234,7 +234,7 @@ export class CertificadoService {
    */
   private async carregarCertificado(): Promise<void> {
     try {
-      const certificadoBuffer = fs.readFileSync(this.config.caminho);
+      fs.readFileSync(this.config.caminho);
       
       if (this.config.tipo === 'A1') {
         // Certificado A1 - arquivo .pfx/.p12
@@ -322,7 +322,7 @@ export class CertificadoService {
       }
       
       // Preparar XML para assinatura
-      let xmlParaAssinar = dados.xmlContent;
+      const xmlParaAssinar = dados.xmlContent;
       
       // Encontrar ou criar o elemento de referência
       const referenceId = dados.referenceId || 'NFe';
