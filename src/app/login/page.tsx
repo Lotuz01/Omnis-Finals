@@ -49,7 +49,7 @@ export default function LoginPage() {
         const data = await response.json();
         setError(data.message || 'Erro ao fazer login');
       }
-    } catch (error) {
+    } catch {
       setError('Erro de conexão. Tente novamente.');
     } finally {
       setIsLoading(false);

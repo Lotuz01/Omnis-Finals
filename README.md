@@ -20,39 +20,6 @@ Sistema web moderno e completo para gestão empresarial, desenvolvido com Next.j
 - **Bloqueio de IPs**: Sistema automático de bloqueio
 - **Auditoria**: Log completo de ações de segurança
 
-### Monitoramento
-- **Métricas Prometheus**: Coleta automática de métricas
-- **Dashboards Grafana**: Visualização em tempo real
-- **Health Checks**: Monitoramento contínuo de saúde
-- **Alertas**: Notificações automáticas de problemas
-- **Logging Estruturado**: Sistema avançado de logs
-
-### Infraestrutura
-- **Docker**: Containerização completa
-- **Nginx**: Proxy reverso com SSL
-- **Backup Automático**: Rotinas de backup do banco
-- **CI/CD Ready**: Scripts de deploy automatizado
-
-## 🏗️ Arquitetura
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│     Nginx       │────│   Next.js App   │────│   PostgreSQL    │
-│  (Proxy/SSL)    │    │   (Frontend +    │    │   (Database)    │
-│                 │    │    Backend)      │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │              ┌─────────────────┐              │
-         │              │     Redis       │              │
-         │              │    (Cache)      │              │
-         │              └─────────────────┘              │
-         │                                                │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Prometheus    │    │     Grafana     │    │   Backup Job    │
-│ (Monitoring)    │    │ (Visualization) │    │   (Automated)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
 ## 🛠️ Tecnologias
 
 ### Frontend
@@ -71,126 +38,56 @@ Sistema web moderno e completo para gestão empresarial, desenvolvido com Next.j
 
 ### Banco de Dados
 - **PostgreSQL 15**: Banco principal
-- **Redis 7**: Cache e sessões
 - **Prisma Migrations**: Controle de versão do schema
 
-### DevOps & Monitoramento
-- **Docker & Docker Compose**: Containerização
-- **Nginx**: Proxy reverso e balanceamento
-- **Prometheus**: Coleta de métricas
-- **Grafana**: Dashboards e visualização
-- **Node Exporter**: Métricas do sistema
-- **cAdvisor**: Métricas de containers
-
-## 📦 Instalação e Deploy
+## 📦 Instalação Local
 
 ### Pré-requisitos
-- Docker 20.10+
-- Docker Compose 2.0+
-- Node.js 18+ (para desenvolvimento)
+- Node.js 18+
 - Git
+- PostgreSQL instalado localmente
 
-### Deploy Rápido
-
+### Passos para Rodar Localmente
 ```bash
 # 1. Clone o repositório
 git clone <repository-url>
 cd sistema-gestao
 
-# 2. Configure as variáveis de ambiente
-cp .env.example .env.production
-# Edite .env.production com suas configurações
+# 2. Instale dependências
+npm install
 
-# 3. Execute o deploy
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh
+# 3. Configure variáveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com configurações locais (ex: DATABASE_URL)
+
+# 4. Rode migrações do banco
+npx prisma migrate dev
+
+# 5. Inicie o servidor de desenvolvimento
+npm run dev
+
+# 6. Acesse a aplicação
+http://localhost:3000
 ```
 
-### Deploy Manual
-
-```bash
-# 1. Build e start dos serviços
-docker-compose up -d --build
-
-# 2. Aguarde todos os serviços ficarem saudáveis
-docker-compose ps
-
-# 3. Acesse a aplicação
-# http://localhost:3000
-```
-
-## 🔧 Configuração
+## 🔧 Configuração Local
 
 ### Variáveis de Ambiente Principais
-
 ```env
 # Aplicação
-NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://seu-dominio.com
+NODE_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 PORT=3000
 
 # Banco de Dados
-DATABASE_URL=postgresql://user:password@postgres:5432/sistema_gestao
-POSTGRES_USER=sistema_gestao_user
-POSTGRES_PASSWORD=senha_super_segura
-POSTGRES_DB=sistema_gestao
+DATABASE_URL=postgresql://user:password@localhost:5432/sistema_gestao
 
-# Redis
-REDIS_URL=redis://redis:6379
-REDIS_PASSWORD=senha_redis_segura
+
 
 # JWT
 JWT_SECRET=seu_jwt_secret_muito_seguro
 JWT_REFRESH_SECRET=seu_refresh_secret_muito_seguro
-
-# SSL/TLS
-SSL_CERT_PATH=/etc/ssl/certs/cert.pem
-SSL_KEY_PATH=/etc/ssl/private/key.pem
-
-# Monitoramento
-PROMETHEUS_ENABLED=true
-GRAFANA_ADMIN_PASSWORD=admin_password_seguro
-
-# Alertas
-ALERT_WEBHOOK_URL=https://hooks.slack.com/services/...
-SMTP_HOST=smtp.gmail.com
-SMTP_USER=seu-email@gmail.com
-SMTP_PASS=sua-senha-app
 ```
-
-## 📊 Monitoramento
-
-### Dashboards Disponíveis
-
-1. **Dashboard Principal** (`http://localhost:3001`)
-   - Status geral da aplicação
-   - Métricas de performance
-   - Uso de recursos
-   - Requisições HTTP
-
-2. **Dashboard de Segurança**
-   - Tentativas de login
-   - IPs bloqueados
-   - Ataques detectados
-   - Certificados SSL
-
-### Métricas Coletadas
-
-- **Aplicação**: Requisições, tempo de resposta, erros
-- **Sistema**: CPU, memória, disco, rede
-- **Banco de Dados**: Conexões, cache hit ratio, queries
-- **Redis**: Memória, comandos, conexões
-- **Nginx**: Requisições, status codes, tempo de resposta
-
-### Alertas Configurados
-
-- Aplicação indisponível
-- Alto tempo de resposta (>3s)
-- Taxa de erro elevada (>5%)
-- Uso de recursos crítico (>85%)
-- Falhas de backup
-- Tentativas de ataque
-- Certificado SSL próximo ao vencimento
 
 ## 🔒 Segurança
 
@@ -220,7 +117,6 @@ SMTP_PASS=sua-senha-app
    - Expiração automática de sessões
 
 ### Testes de Segurança
-
 ```bash
 # Executar testes de segurança
 npm run test:security
@@ -240,7 +136,6 @@ npm run test:load
 5. **Testes E2E**: Fluxos completos de usuário
 
 ### Executar Testes
-
 ```bash
 # Todos os testes
 npm test
@@ -280,7 +175,7 @@ npm run test:coverage
 
 ### Otimizações Implementadas
 
-1. **Cache Redis**: Sessões e dados frequentes
+1. **Cache em Memória**: Sessões e dados frequentes
 2. **Compressão Gzip**: Nginx com compressão
 3. **Otimização de Imagens**: Next.js Image Optimization
 4. **Bundle Splitting**: Carregamento otimizado
@@ -302,26 +197,26 @@ npm run test:coverage
 #### Aplicação não inicia
 ```bash
 # Verificar logs
-docker-compose logs app
+
 
 # Verificar saúde dos serviços
 ./scripts/health-monitor.sh check
 
 # Reiniciar serviços
-docker-compose restart
+
 ```
 
 #### Banco de dados não conecta
 ```bash
 # Verificar status do PostgreSQL
-docker-compose exec postgres pg_isready
+
 
 # Verificar logs do banco
-docker-compose logs postgres
+
 
 # Resetar banco (CUIDADO!)
-docker-compose down -v
-docker-compose up -d
+
+
 ```
 
 #### Performance degradada
@@ -330,10 +225,10 @@ docker-compose up -d
 curl http://localhost:3000/api/metrics
 
 # Verificar recursos
-docker stats
 
-# Limpar cache Redis
-docker-compose exec redis redis-cli FLUSHALL
+
+# Limpar cache
+
 ```
 
 ### Logs Importantes

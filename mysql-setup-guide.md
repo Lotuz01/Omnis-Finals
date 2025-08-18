@@ -45,20 +45,7 @@ O MySQL está rodando mas não conseguimos acessar com as credenciais padrão.
 2. Configure a string de conexão no .env.local
 3. Use a URL de conexão fornecida
 
-### Opção 4: Usar Docker (Se Docker Desktop estiver instalado)
-1. Instale o Docker Desktop
-2. Execute:
-   ```
-   docker run --name mysql-local -e MYSQL_ROOT_PASSWORD=root123 -e MYSQL_DATABASE=sistema_gestao -p 3306:3306 -d mysql:8.0
-   ```
-3. Configure o .env.local:
-   ```
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=root123
-   DB_NAME=sistema_gestao
-   ```
+
 
 ## Próximos Passos
 Escolha uma das opções acima e execute o script `node setup-database.js` novamente após configurar o MySQL.

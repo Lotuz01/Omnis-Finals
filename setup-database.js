@@ -40,59 +40,29 @@ async function setupDatabase() {
     // Usar configurações do .env.local
     require('dotenv').config({ path: './.env.local' });
     
-    const configs = [
-      {
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT) || 3306,
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'pdv_system'
-      }
-    ];
+    const dbName = process.env.DB_NAME || 'sistema_gestao';
     
-    let connectedConfig = null;
+    const baseConfig = {
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT) || 3306,
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || ''
+    };
     
-    for (const config of configs) {
-      try {
-        console.log(`Tentando conectar com usuário: ${config.user}, senha: ${config.password || '(vazia)'}`);
-        connection = await mysql.createConnection(config);
-        console.log('✅ Conexão estabelecida!');
-        connectedConfig = config;
-        break;
-      } catch (error) {
-        console.log(`❌ Falha na conexão: ${error.message}`);
-        if (connection) {
-          await connection.end();
-          connection = null;
-        }
-      }
-    }
-    
-    if (!connection) {
-      console.error('❌ Não foi possível conectar ao MySQL com nenhuma configuração.');
-      console.log('\n📋 Soluções alternativas:');
-      console.log('\n🔧 Opção 1 - Usar banco online (Recomendado):');
-      console.log('1. Acesse: https://www.freemysqlhosting.net/');
-      console.log('2. Crie uma conta gratuita');
-      console.log('3. Anote as credenciais fornecidas');
-      console.log('4. Atualize o .env.local com as credenciais');
-      console.log('\n🔧 Opção 2 - Instalar XAMPP:');
-      console.log('1. Baixe: https://www.apachefriends.org/');
-      console.log('2. Instale e inicie Apache + MySQL');
-      console.log('3. Use: DB_USER=root, DB_PASSWORD=(vazio)');
-      console.log('\n🔧 Opção 3 - Resetar senha MySQL:');
-      console.log('1. Abra CMD como Administrador');
-      console.log('2. Execute: net stop MySQL80');
-      console.log('3. Siga o guia em mysql-setup-guide.md');
-      return;
-    }
+    console.log(`Tentando conectar com usuário: ${baseConfig.user}, senha: ${baseConfig.password || '(vazia)'}`);
+    connection = await mysql.createConnection(baseConfig);
+    console.log('✅ Conexão base estabelecida!');
     
     // Criar banco de dados
-    await connection.query('CREATE DATABASE IF NOT EXISTS pdv_system');
-    console.log('✅ Banco de dados "pdv_system" criado/verificado');
+    await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`);
+    console.log(`✅ Banco de dados "${dbName}" criado/verificado`);
     
-    // Usar o banco de dados
-    await connection.query('USE pdv_system');
+    await connection.end();
+    
+    // Conectar ao banco criado
+    const fullConfig = { ...baseConfig, database: dbName };
+    connection = await mysql.createConnection(fullConfig);
+    console.log('✅ Conectado ao banco de dados!');
     
     // Criar tabelas
     console.log('📋 Criando tabelas...');
@@ -188,11 +158,11 @@ async function setupDatabase() {
     
     console.log('\n🎉 Configuração do banco de dados concluída com sucesso!');
     console.log('\n📋 Configurações para o .env.local:');
-    console.log(`DB_HOST=localhost`);
-    console.log(`DB_PORT=3306`);
-    console.log(`DB_USER=${connectedConfig.user}`);
-    console.log(`DB_PASSWORD=${connectedConfig.password}`);
-    console.log(`DB_NAME=pdv_system`);
+    console.log(`DB_HOST=${baseConfig.host}`);
+    console.log(`DB_PORT=${baseConfig.port}`);
+    console.log(`DB_USER=${baseConfig.user}`);
+    console.log(`DB_PASSWORD=${baseConfig.password}`);
+    console.log(`DB_NAME=${dbName}`);
     
   } catch (error) {
     console.error('❌ Erro durante a configuração:', error.message);

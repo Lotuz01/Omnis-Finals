@@ -43,12 +43,12 @@ class DatabasePool {
     console.error('🔧 [POOL-CONFIG] Port final:', dbPort);
     console.error('🔧 [POOL-CONFIG] User final:', dbUser);
     
-    if (!dbHost || !dbPort || !dbUser || !dbPassword || !dbName) {
+    if (dbHost === undefined || dbPort === undefined || dbUser === undefined || dbPassword === undefined || dbName === undefined) {
       console.error('❌ [POOL-CONFIG] ERRO: Variáveis de ambiente obrigatórias não definidas!');
       console.error('❌ [POOL-CONFIG] DB_HOST:', dbHost);
       console.error('❌ [POOL-CONFIG] DB_PORT:', dbPort);
       console.error('❌ [POOL-CONFIG] DB_USER:', dbUser);
-      console.error('❌ [POOL-CONFIG] DB_PASSWORD definido:', !!dbPassword);
+      console.error('❌ [POOL-CONFIG] DB_PASSWORD definido:', dbPassword !== undefined);
       console.error('❌ [POOL-CONFIG] DB_NAME:', dbName);
       throw new Error('Variáveis de ambiente do banco de dados não estão definidas corretamente');
     }
@@ -341,15 +341,12 @@ class DatabasePool {
   }
 }
 
-// Instância singleton
 export const dbPool = DatabasePool.getInstance();
 
-// Função de conveniência para manter compatibilidade
 export async function connectToDatabase(): Promise<mysql.PoolConnection> {
   return await dbPool.getConnection();
 }
 
-// Função para executar queries com pool
 export async function executeQuery<T = any>(
   query: string, 
   params?: any[]
@@ -357,16 +354,9 @@ export async function executeQuery<T = any>(
   return await dbPool.execute(query, params);
 }
 
-// Função para transações
 export async function withTransaction<T>(
   callback: (connection: mysql.PoolConnection) => Promise<T>
 ): Promise<T> {
   return await dbPool.transaction(callback);
 }
-
-// Inicializar pool na importação (apenas em ambiente servidor)
-if (typeof window === 'undefined') {
-  dbPool.initialize().catch((error) => {
-    logger.error('Falha ao inicializar pool de conexões na importação', error);
-  });
-}
+export { DatabasePool };

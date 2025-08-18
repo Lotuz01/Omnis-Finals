@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { cookies } from 'next/headers';
 import { dbPool, withTransaction } from '../../../utils/database-pool';
 import { logger } from '../../../utils/logger';
@@ -55,60 +53,20 @@ export async function GET() {
       return NextResponse.json({ message: 'Admin access required' }, { status: 403 });
     }
 
-    const backupDir = path.join(process.cwd(), 'src', 'backups');
-    
-    try {
-      const files = await fs.readdir(backupDir);
-      const backupFiles = files.filter(file => file.startsWith('backup_') && file.endsWith('.json'));
-      
-      const backups = [];
-      
-      // Processar arquivos em paralelo para melhor performance
-      const filePromises = backupFiles.map(async (file) => {
-        try {
-          const filePath = path.join(backupDir, file);
-          const stats = await fs.stat(filePath);
-          const sizeKB = (stats.size / 1024).toFixed(2);
-          
-          return {
-            filename: file,
-            size: `${sizeKB} KB`,
-            sizeFormatted: formatBytes(stats.size),
-            created: stats.mtime.toISOString(),
-            path: filePath
-          };
-        } catch (error) {
-          logger.warn('Erro ao processar arquivo de backup', error);
-          return null;
-        }
-      });
+    const [rows] = await dbPool.execute<{ id: number; created_at: Date; version: string }[]>('SELECT id, created_at, version FROM backups ORDER BY created_at DESC');
+    const backups = rows.map(row => ({
+      id: row.id,
+      created: row.created_at.toISOString(),
+      version: row.version
+    }));
 
-      const results = await Promise.all(filePromises);
-      backups.push(...results.filter(backup => backup !== null));
-      
-      // Ordenar por data de criação (mais recente primeiro)
-      backups.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
-      
-      logger.info('Backup list retrieved', { count: backups.length, duration: Date.now() - startTime });
-      return NextResponse.json({ backups });
-      
-    } catch {
-      return NextResponse.json({ backups: [] });
-    }
+    logger.info('Backup list retrieved', { count: backups.length, duration: Date.now() - startTime });
+    return NextResponse.json({ backups });
     
   } catch (error) {
     logger.error('Error listing backups', error);
     return NextResponse.json({ message: 'Error listing backups', error: (error as Error).message }, { status: 500 });
   }
-}
-
-// Função auxiliar para formatar bytes
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 // POST - Criar novo backup
@@ -132,165 +90,72 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Admin access required' }, { status: 403 });
     }
 
-    const { action, filename } = await request.json();
+    const { action, backupId } = await request.json();
 
     if (action === 'create') {
-      const backup = {
+      const backup: {
+        timestamp: string;
+        version: string;
+        data: { [table: string]: any[] };
+      } = {
         timestamp: new Date().toISOString(),
         version: '1.0',
-        data: {} as Record<string, unknown>,
-        metadata: {
-          totalRecords: 0,
-          tablesCount: 0
-        }
+        data: {}
       };
 
-      // Lista de tabelas permitidas para backup com ordem de dependência
-      const allowedTables = {
-        'users': 'SELECT * FROM users',
-        'products': 'SELECT * FROM products', 
-        'movements': 'SELECT * FROM movements',
-        'accounts': 'SELECT * FROM accounts'
-      };
-      
-      const tables = Object.keys(allowedTables);
-      let totalRecords = 0;
-      
-      // Usar transação para garantir consistência dos dados
-      await withTransaction(async (connection) => {
-        for (const table of tables) {
-          try {
-            // Usar query pré-definida para evitar SQL injection
-            const query = allowedTables[table as keyof typeof allowedTables];
-            const [rows] = await connection.execute(query);
-            backup.data[table] = rows;
-            totalRecords += (rows as Record<string, unknown>[]).length;
-            
-            logger.debug(`Backup da tabela ${table} concluído`, { 
-              records: (rows as Record<string, unknown>[]).length 
-            });
-          } catch (error) {
-            logger.warn(`Erro ao fazer backup da tabela ${table}`, error);
-            backup.data[table] = [];
-          }
-        }
-      });
+      const tables = ['users', 'products', 'movements', 'accounts'];
 
-      backup.metadata.totalRecords = totalRecords;
-      backup.metadata.tablesCount = Object.keys(backup.data).length;
+      for (const table of tables) {
+        const [rows] = await dbPool.execute(`SELECT * FROM ${table}`);
+        backup.data[table] = rows;
+      }
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupDir = path.join(process.cwd(), 'src', 'backups');
-      const backupFile = path.join(backupDir, `backup_${timestamp}.json`);
-      
-      // Criar diretório se não existir
-      try {
-        await fs.mkdir(backupDir, { recursive: true });
-        logger.info('Diretório de backup criado', { path: backupDir });
-      } catch {
-        // Diretório já existe
+      const backupJson = JSON.stringify(backup, null, 2);
+      const [result] = await dbPool.execute(
+        'INSERT INTO backups (version, data) VALUES (?, ?)', 
+        [backup.version, backupJson]
+      );
+
+      logger.info('Backup created successfully', { id: result.insertId });
+      return NextResponse.json({ message: 'Backup created successfully', id: result.insertId });
+
+    } else if (action === 'restore' && backupId) {
+      const [rows] = await dbPool.execute<{ data: string }[]>('SELECT data FROM backups WHERE id = ?', [backupId]);
+      if (rows.length === 0) {
+        return NextResponse.json({ message: 'Backup not found' }, { status: 404 });
       }
-      
-      // Escrever backup de forma assíncrona e otimizada
-      const backupData = JSON.stringify(backup, null, 2);
-      await fs.writeFile(backupFile, backupData, { encoding: 'utf8' });
-      
-      const stats = await fs.stat(backupFile);
-      const sizeKB = (stats.size / 1024).toFixed(2);
-      
-      logger.info('Backup created successfully', {
-        action: 'create',
-        filename: path.basename(backupFile),
-        size: stats.size,
-        totalRecords,
-        tablesCount: backup.metadata.tablesCount,
-        duration: Date.now() - startTime
-      });
-      
-      return NextResponse.json({ 
-        message: 'Backup created successfully',
-        filename: path.basename(backupFile),
-        size: `${sizeKB} KB`,
-        sizeFormatted: formatBytes(stats.size),
-        timestamp: backup.timestamp,
-        totalRecords,
-        tablesCount: backup.metadata.tablesCount,
-        tables: Object.keys(backup.data).map(table => ({
-          name: table,
-          records: Array.isArray(backup.data[table]) ? backup.data[table].length : 0
-        }))
-      });
-      
-    } else if (action === 'restore' && filename) {
-      // Restaurar backup
-      const backupDir = path.join(process.cwd(), 'src', 'backups');
-      const backupFilePath = path.join(backupDir, filename);
-      
-      // Verificar se arquivo existe
-      try {
-        await fs.access(backupFilePath);
-      } catch {
-        return NextResponse.json({ message: 'Backup file not found' }, { status: 404 });
-      }
-      
-      // Ler e restaurar backup
-      const backupContent = await fs.readFile(backupFilePath, 'utf8');
-      const backup = JSON.parse(backupContent);
-      
-      let restoredRecords = 0;
-      
+
+      const backup: {
+        timestamp: string;
+        version: string;
+        data: { [table: string]: any[] };
+      } = JSON.parse(rows[0].data);
+
       await withTransaction(async (connection) => {
-        // Desabilitar verificações de chave estrangeira
         await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
-        
-        const restoredTables = [];
-        
-        // Restaurar cada tabela
+
         for (const [tableName, tableData] of Object.entries(backup.data)) {
-          // Limpar tabela atual
           await connection.execute(`DELETE FROM ${tableName}`);
-          
-          if ((tableData as Record<string, unknown>[]).length > 0) {
-            // Obter colunas da primeira linha
-            const columns = Object.keys((tableData as Record<string, unknown>[])[0]);
+
+          if ((tableData as any[]).length > 0) {
+            const columns = Object.keys((tableData as any[])[0]);
             const placeholders = columns.map(() => '?').join(', ');
             const columnNames = columns.join(', ');
-            
             const insertQuery = `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders})`;
-            
-            // Inserir dados
-            for (const row of (tableData as Record<string, unknown>[])) {
-              const values = columns.map(col => (row as Record<string, unknown>)[col]);
+
+            for (const row of (tableData as any[])) {
+              const values = columns.map(col => row[col]);
               await connection.execute(insertQuery, values);
             }
           }
-          
-          restoredRecords += (tableData as Record<string, unknown>[]).length;
-          restoredTables.push({
-            name: tableName,
-            records: (tableData as Record<string, unknown>[]).length
-          });
-          
-          logger.debug(`Tabela ${tableName} restaurada`, { records: (tableData as Record<string, unknown>[]).length });
         }
-        
-        // Reabilitar verificações de chave estrangeira
+
         await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
       });
-      
-      logger.info('Backup restored successfully', {
-        action: 'restore',
-        filename,
-        restoredRecords,
-        duration: Date.now() - startTime
-      });
-      
-      return NextResponse.json({ 
-        message: 'Backup restored successfully',
-        backupDate: backup.timestamp,
-        restoredRecords
-      });
-      
+
+      logger.info('Backup restored successfully', { id: backupId });
+      return NextResponse.json({ message: 'Backup restored successfully' });
+
     } else {
       return NextResponse.json({ message: 'Invalid action' }, { status: 400 });
     }
@@ -316,35 +181,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ message: 'Admin access required' }, { status: 403 });
     }
 
-    const body = await request.text();
-    logger.debug('DELETE backup request body received', { body });
-    let filename = '';
-    try {
-      filename = JSON.parse(body).filename;
-    } catch (err) {
-      logger.error('Error parsing JSON in DELETE backup', err);
-      return NextResponse.json({ message: 'Erro ao processar JSON' }, { status: 400 });
-    }
-    
-    if (!filename) {
-      return NextResponse.json({ message: 'Filename is required' }, { status: 400 });
-    }
-    
-    logger.info('DELETE backup request', { filename });
+    const { backupId } = await request.json();
 
-    const backupDir = path.join(process.cwd(), 'src', 'backups');
-    const backupFilePath = path.join(backupDir, filename);
-    
-    // Verificar se arquivo existe
-    try {
-      await fs.access(backupFilePath);
-    } catch {
-      return NextResponse.json({ message: 'Backup file not found' }, { status: 404 });
+    if (!backupId) {
+      return NextResponse.json({ message: 'Backup ID is required' }, { status: 400 });
     }
-    
-    // Deletar arquivo
-    await fs.unlink(backupFilePath);
-    
+
+    await dbPool.execute('DELETE FROM backups WHERE id = ?', [backupId]);
+
     return NextResponse.json({ message: 'Backup deleted successfully' });
     
   } catch (error) {

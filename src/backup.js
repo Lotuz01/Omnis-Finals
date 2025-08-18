@@ -1,13 +1,12 @@
 // Sistema de Backup para PDV System
 const mysql = require('mysql2/promise');
-const fs = require('fs').promises;
-const path = require('path');
+require('dotenv').config({ path: require('path').join(__dirname, '../.env.local') });
 
 // Configuração do banco de dados
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'wendel',
-  password: process.env.DB_PASSWORD || 'Gengar1509@',
+  password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : undefined,
   database: process.env.DB_NAME || 'pdv_system',
 };
 
@@ -18,16 +17,14 @@ async function createBackup() {
     console.log('🔄 Iniciando backup do banco de dados...');
     connection = await mysql.createConnection(dbConfig);
     
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupDir = path.join(__dirname, 'backups');
-    const backupFile = path.join(backupDir, `backup_${timestamp}.json`);
-    
-    // Criar diretório de backup se não existir
-    try {
-      await fs.mkdir(backupDir, { recursive: true });
-    } catch {
-      // Diretório já existe
-    }
+    // Criar tabela de backups se não existir
+    await connection.execute(
+      'CREATE TABLE IF NOT EXISTS backups (' +
+      'id INT AUTO_INCREMENT PRIMARY KEY, ' +
+      'created_at DATETIME DEFAULT CURRENT_TIMESTAMP, ' +
+      'version VARCHAR(50), ' +
+      'data LONGTEXT)'
+    );
     
     const backup = {
       timestamp: new Date().toISOString(),
@@ -45,16 +42,20 @@ async function createBackup() {
       console.log(`✅ ${table}: ${rows.length} registros`);
     }
     
-    // Salvar backup em arquivo JSON
-    await fs.writeFile(backupFile, JSON.stringify(backup, null, 2), 'utf8');
+    // Salvar backup no banco de dados
+    const backupJson = JSON.stringify(backup, null, 2);
+    const [result] = await connection.execute(
+      'INSERT INTO backups (version, data) VALUES (?, ?)', 
+      [backup.version, backupJson]
+    );
     
-    console.log(`✅ Backup criado com sucesso: ${backupFile}`);
+    console.log(`✅ Backup criado com sucesso no banco de dados (ID: ${result.insertId})`);
     console.log(`📊 Total de registros salvos:`);
     for (const table of tables) {
       console.log(`   - ${table}: ${backup.data[table].length}`);
     }
     
-    return backupFile;
+    return result.insertId;
     
   } catch (error) {
     console.error('❌ Erro ao criar backup:', error.message);
@@ -65,26 +66,22 @@ async function createBackup() {
 }
 
 // Função para restaurar backup
-async function restoreBackup(backupFilePath) {
+async function restoreBackup(backupId) {
   let connection;
   try {
     console.log('🔄 Iniciando restauração do backup...');
     
-    // Verificar se o arquivo existe
-    try {
-      await fs.access(backupFilePath);
-    } catch {
-      throw new Error(`Arquivo de backup não encontrado: ${backupFilePath}`);
+    connection = await mysql.createConnection(dbConfig);
+    
+    const [rows] = await connection.execute('SELECT data, version, created_at FROM backups WHERE id = ?', [backupId]);
+    if (rows.length === 0) {
+      throw new Error(`Backup não encontrado com ID: ${backupId}`);
     }
     
-    // Ler arquivo de backup
-    const backupContent = await fs.readFile(backupFilePath, 'utf8');
-    const backup = JSON.parse(backupContent);
+    const backup = JSON.parse(rows[0].data);
     
-    console.log(`📅 Backup criado em: ${backup.timestamp}`);
-    console.log(`🔢 Versão: ${backup.version}`);
-    
-    connection = await mysql.createConnection(dbConfig);
+    console.log(`📅 Backup criado em: ${rows[0].created_at}`);
+    console.log(`🔢 Versão: ${rows[0].version}`);
     
     // Desabilitar verificações de chave estrangeira temporariamente
     await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
@@ -129,14 +126,13 @@ async function restoreBackup(backupFilePath) {
 
 // Função para listar backups disponíveis
 async function listBackups() {
+  let connection;
   try {
-    const backupDir = path.join(__dirname, 'backups');
+    connection = await mysql.createConnection(dbConfig);
     
-    try {
-      const files = await fs.readdir(backupDir);
-      const backupFiles = files.filter(file => file.startsWith('backup_') && file.endsWith('.json'));
-      
-      if (backupFiles.length === 0) {
+    const [rows] = await connection.execute('SELECT id, created_at, version FROM backups ORDER BY created_at DESC');
+    
+    if (rows.length === 0) {
         console.log('📁 Nenhum backup encontrado.');
         return [];
       }
@@ -144,41 +140,37 @@ async function listBackups() {
       console.log('📁 Backups disponíveis:');
       const backups = [];
       
-      for (const file of backupFiles) {
-        const filePath = path.join(backupDir, file);
-        const stats = await fs.stat(filePath);
-        const size = (stats.size / 1024).toFixed(2);
-        
-        console.log(`   - ${file} (${size} KB) - ${stats.mtime.toLocaleString()}`);
+      for (const row of rows) {
+        console.log(`   - ID: ${row.id} - Versão: ${row.version} - Criado: ${row.created_at.toLocaleString()}`);
         backups.push({
-          filename: file,
-          path: filePath,
-          size: `${size} KB`,
-          created: stats.mtime
+          id: row.id,
+          created: row.created_at,
+          version: row.version
         });
       }
       
       return backups;
-      
-    } catch {
-      console.log('📁 Diretório de backups não existe ainda.');
-      return [];
-    }
     
   } catch (error) {
     console.error('❌ Erro ao listar backups:', error.message);
     throw error;
+  } finally {
+    if (connection) connection.end();
   }
 }
 
 // Função para deletar backup antigo
-async function deleteBackup(backupFilePath) {
+async function deleteBackup(backupId) {
+  let connection;
   try {
-    await fs.unlink(backupFilePath);
-    console.log(`🗑️ Backup deletado: ${path.basename(backupFilePath)}`);
+    connection = await mysql.createConnection(dbConfig);
+    await connection.execute('DELETE FROM backups WHERE id = ?', [backupId]);
+    console.log(`🗑️ Backup deletado: ID ${backupId}`);
   } catch (error) {
     console.error('❌ Erro ao deletar backup:', error.message);
     throw error;
+  } finally {
+    if (connection) connection.end();
   }
 }
 
@@ -200,7 +192,7 @@ async function autoBackup(keepCount = 5) {
         .slice(0, backups.length - keepCount);
       
       for (const backup of backupsToDelete) {
-        await deleteBackup(backup.path);
+        await deleteBackup(backup.id);
       }
       
       console.log(`🧹 ${backupsToDelete.length} backups antigos removidos.`);
@@ -259,9 +251,8 @@ if (require.main === module) {
               console.log('❌ Nenhum backup disponível para restaurar.');
               break;
             }
-            rl.question('Digite o nome do arquivo de backup: ', async (filename) => {
-              const backupPath = path.join(__dirname, 'backups', filename);
-              await restoreBackup(backupPath);
+            rl.question('Digite o ID do backup: ', async (id) => {
+              await restoreBackup(parseInt(id));
               handleMenu();
             });
             return;
@@ -280,9 +271,8 @@ if (require.main === module) {
               console.log('❌ Nenhum backup disponível para deletar.');
               break;
             }
-            rl.question('Digite o nome do arquivo de backup para deletar: ', async (filename) => {
-              const backupPath = path.join(__dirname, 'backups', filename);
-              await deleteBackup(backupPath);
+            rl.question('Digite o ID do backup para deletar: ', async (id) => {
+              await deleteBackup(parseInt(id));
               handleMenu();
             });
             return;
@@ -306,4 +296,14 @@ if (require.main === module) {
   }
   
   handleMenu();
+}
+
+// Se executado diretamente, criar backup automaticamente
+if (require.main === module) {
+  createBackup()
+    .then(() => process.exit(0))
+    .catch(error => {
+      console.error(error);
+      process.exit(1);
+    });
 }

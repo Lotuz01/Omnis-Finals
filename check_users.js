@@ -3,9 +3,9 @@ const mysql = require('mysql2/promise');
 async function checkUsers() {
   const connection = await mysql.createConnection({
     host: '127.0.0.1',
-    port: 3307,
-    user: 'app_user',
-    password: 'app_password',
+    port: 3306,
+    user: 'root',
+    password: '',
     database: 'sistema_gestao'
   });
 

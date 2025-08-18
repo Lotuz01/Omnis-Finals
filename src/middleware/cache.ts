@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cache, CACHE_KEYS, CACHE_TTL } from '../lib/redis';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../lib/cache';
 
 // Configuração de cache por rota
 const CACHE_CONFIG = {
@@ -198,7 +198,7 @@ export async function getCacheStats(): Promise<any> {
   }
 }
 
-export default {
+const cacheMiddlewareUtils = {
   cacheMiddleware,
   checkCache,
   invalidateCache,
@@ -206,3 +206,4 @@ export default {
   warmupCache,
   getCacheStats
 };
+export default cacheMiddlewareUtils;

@@ -60,11 +60,6 @@ export default function NFEPage() {
   const [autoPrint, setAutoPrint] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchClients();
-    fetchNFEs();
-  }, []);
-
   const fetchClients = async () => {
     try {
       const response = await fetch('/api/clients');
@@ -88,6 +83,11 @@ export default function NFEPage() {
       console.error('Erro ao buscar NFes:', error);
     }
   };
+
+  useEffect(() => {
+    fetchClients();
+    fetchNFEs();
+  }, []);
 
   const addItem = () => {
     setItems([...items, {

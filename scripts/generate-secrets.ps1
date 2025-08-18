@@ -3,9 +3,7 @@
 # Versão: 1.0.0
 # PowerShell Version
 
-param(
-    [switch]$WithRedisPassword
-)
+param()
 
 # Função para gerar string aleatória
 function Generate-RandomString {
@@ -66,7 +64,7 @@ $jwtSecret = Generate-RandomString -Length 64
 $encryptionKey = Generate-RandomString -Length 32
 $sessionSecret = Generate-RandomString -Length 48
 $dbPassword = Generate-StrongPassword -Length 20
-$redisPassword = Generate-StrongPassword -Length 16
+
 
 Write-Log "Secrets gerados com sucesso!"
 Write-Host ""
@@ -99,12 +97,7 @@ $content = $content -replace 'DB_PASSWORD=CHANGE_PASSWORD', "DB_PASSWORD=$dbPass
 $content = $content -replace ':CHANGE_PASSWORD@', ":$dbPassword@"
 Write-Log "DB_PASSWORD configurado" -Type Success
 
-# Redis Password (opcional)
-if ($WithRedisPassword) {
-    $content = $content -replace 'REDIS_PASSWORD=', "REDIS_PASSWORD=$redisPassword"
-    $content = $content -replace 'redis://redis:6379', "redis://:$redisPassword@redis:6379"
-    Write-Log "REDIS_PASSWORD configurado" -Type Success
-}
+
 
 # Salvar arquivo atualizado
 $content | Set-Content ".env.production" -NoNewline
@@ -156,7 +149,5 @@ Write-Host "   JWT_SECRET: $($jwtSecret.Substring(0,8))...(64 chars)"
 Write-Host "   ENCRYPTION_KEY: $($encryptionKey.Substring(0,8))...(32 chars)"
 Write-Host "   SESSION_SECRET: $($sessionSecret.Substring(0,8))...(48 chars)"
 Write-Host "   DB_PASSWORD: $($dbPassword.Substring(0,4))...(20 chars)"
-if ($WithRedisPassword) {
-    Write-Host "   REDIS_PASSWORD: $($redisPassword.Substring(0,4))...(16 chars)"
-}
+
 Write-Host ""

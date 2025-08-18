@@ -17,7 +17,7 @@ function generateSecrets() {
   const secrets = {
     NEXTAUTH_SECRET: generateSecureKey(32),
     JWT_SECRET: generateSecureKey(32),
-    REDIS_PASSWORD: generateSecureKey(24),
+    
     GRAFANA_ADMIN_PASSWORD: generateSecureKey(16),
     MYSQL_ROOT_PASSWORD: generateSecureKey(24),
     MYSQL_PASSWORD: generateSecureKey(24)

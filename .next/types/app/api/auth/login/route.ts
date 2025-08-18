@@ -1,4 +1,4 @@
-// File: C:\Users\Lotuz\Desktop\Nova pasta\src\app\api\auth\login\route.ts
+// File: C:\Users\Lotuz\Desktop\OMNIS\Omnis-Finals\src\app\api\auth\login\route.ts
 import * as entry from '../../../../../../src/app/api/auth/login/route.js'
 import type { NextRequest } from 'next/server.js'
 

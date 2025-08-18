@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+require('dotenv').config();
 
 async function createPrinterTables() {
   let connection;
@@ -9,8 +10,8 @@ async function createPrinterTables() {
     // Configuração da conexão com o banco de dados
     const dbConfig = {
       host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'wendel',
-      password: process.env.DB_PASSWORD || 'Gengar1509@',
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME || 'pdv_system'
     };
     

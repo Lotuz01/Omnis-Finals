@@ -169,7 +169,7 @@ class TestRunner {
     
     try {
       const result = await this.executeCommand('npm', ['run', 'lint'], {
-        cwd: path.join(__dirname, '..')
+        cwd: path.join(__dirname, '../../')
       });
       
       this.results.tests.lint = {
@@ -197,7 +197,7 @@ class TestRunner {
     
     try {
       const result = await this.executeCommand('npx', ['tsc', '--noEmit'], {
-        cwd: path.join(__dirname, '..')
+        cwd: path.join(__dirname, '../../')
       });
       
       this.results.tests.typecheck = {
@@ -225,7 +225,8 @@ class TestRunner {
     
     try {
       const result = await this.executeCommand('npm', ['run', 'build'], {
-        cwd: path.join(__dirname, '..')
+        cwd: path.join(__dirname, '../../'),
+        env: { ...process.env, NODE_ENV: 'production' }
       });
       
       this.results.tests.build = {

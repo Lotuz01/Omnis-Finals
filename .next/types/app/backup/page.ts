@@ -1,4 +1,4 @@
-// File: C:\Users\Lotuz\Desktop\Nova pasta\src\app\backup\page.tsx
+// File: C:\Users\Lotuz\Desktop\OMNIS\Omnis-Finals\src\app\backup\page.tsx
 import * as entry from '../../../../src/app/backup/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

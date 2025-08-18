@@ -1,4 +1,4 @@
-// Simples contador de requisições (em produção, usar Redis ou banco)
+// Simples contador de requisições (em produção, usar banco ou cache persistente)
 let requestCount = 0;
 let totalResponseTime = 0;
 let activeConnections = 0;

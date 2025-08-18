@@ -216,7 +216,7 @@ class IntegrationTest {
     
     // Teste de login
     await this.measureTime('Login com credenciais válidas', async () => {
-      const response = await this.client.post('/api/auth', {
+      const response = await this.client.post('/api/auth/login', {
         username: TEST_CONFIG.testUser.username,
         password: TEST_CONFIG.testUser.password
       });
@@ -265,6 +265,7 @@ class IntegrationTest {
         const testUser = {
           username: `test_${Date.now()}`,
           password: 'test123',
+          name: 'Test User',
           email: `test_${Date.now()}@example.com`,
           role: 'user'
         };

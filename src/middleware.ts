@@ -128,6 +128,9 @@ export async function middleware(request: NextRequest) {
       ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       userAgent: request.headers.get('user-agent')
     });
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     return addSecurityHeaders(NextResponse.redirect(new URL('/login', request.url)));
   }
 
@@ -149,6 +152,9 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     console.log(`[MIDDLEWARE] Invalid auth token format for: ${pathname}`);
     logInfo('Invalid auth token format', { pathname, error: (error as Error).message });
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     return addSecurityHeaders(NextResponse.redirect(new URL('/login', request.url)));
   }
 

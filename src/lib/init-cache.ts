@@ -1,20 +1,19 @@
-import { cache } from './redis';
-import { logger } from '../utils/logger';
+import { cache } from './cache';
 
-// Inicializar cache Redis
+// Inicializar cache em memória
 export async function initializeCache(): Promise<void> {
   try {
-    console.log('[CACHE] Initializing Redis cache...');
+    console.log('[CACHE] Initializing memory cache...');
     await cache.init();
-    console.log('[CACHE] Redis cache initialized successfully');
+    console.log('[CACHE] Memory cache initialized successfully');
   } catch (error) {
-    console.error('[CACHE] Failed to initialize Redis cache:', error);
-    // Não falhar a aplicação se o Redis não estiver disponível
+    console.error('[CACHE] Failed to initialize memory cache:', error);
+    // Não falhar a aplicação se o cache não puder ser inicializado
     // A aplicação deve funcionar sem cache
   }
 }
 
-// Verificar se o Redis está disponível
+// Verificar se o cache está disponível
 export async function checkCacheHealth(): Promise<boolean> {
   try {
     await cache.set('health_check', 'ok', 10);
@@ -27,7 +26,8 @@ export async function checkCacheHealth(): Promise<boolean> {
   }
 }
 
-export default {
+const cacheUtils = {
   initializeCache,
   checkCacheHealth
 };
+export default cacheUtils;

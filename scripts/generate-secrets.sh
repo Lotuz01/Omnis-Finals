@@ -57,7 +57,7 @@ JWT_SECRET=$(generate_random_string 64)
 ENCRYPTION_KEY=$(generate_random_string 32)
 SESSION_SECRET=$(generate_random_string 48)
 DB_PASSWORD=$(generate_strong_password 20)
-REDIS_PASSWORD=$(generate_strong_password 16)
+
 
 log "Secrets gerados com sucesso!"
 echo ""
@@ -86,12 +86,7 @@ sed -i "s/DB_PASSWORD=CHANGE_PASSWORD/DB_PASSWORD=${DB_PASSWORD}/g" .env.product
 sed -i "s/:CHANGE_PASSWORD@/:${DB_PASSWORD}@/g" .env.production
 log_success "DB_PASSWORD configurado"
 
-# Redis Password (opcional)
-if [[ "$1" == "--with-redis-password" ]]; then
-    sed -i "s/REDIS_PASSWORD=/REDIS_PASSWORD=${REDIS_PASSWORD}/g" .env.production
-    sed -i "s|redis://redis:6379|redis://:${REDIS_PASSWORD}@redis:6379|g" .env.production
-    log_success "REDIS_PASSWORD configurado"
-fi
+
 
 echo ""
 log_success "Todos os secrets foram configurados!"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
@@ -14,12 +14,9 @@ import {
   IconSettings,
   IconLogout,
   IconMenu2,
-  IconX,
-  IconChevronDown,
   IconUser,
   IconShield,
   IconDatabase,
-  IconBell,
   IconSearch
 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
@@ -33,8 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { NotificationsDropdown } from '@/components/notifications-dropdown';
 
@@ -197,7 +193,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
       </Sheet>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-auto">
         {/* Header */}
         <header className="flex h-(--header-height) items-center justify-between border-b bg-white px-4 lg:px-6">
           <div className="flex items-center space-x-4">

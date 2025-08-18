@@ -25,10 +25,6 @@ const ProductsPage = () => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotify();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
   const fetchProducts = async () => {
     try {
       const res = await fetch('/api/products');
@@ -79,6 +75,10 @@ const ProductsPage = () => {
       );
     }
   };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();

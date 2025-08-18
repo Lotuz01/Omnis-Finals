@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { dbPool } from '@/utils/database-pool';
-import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/redis';
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
 export async function GET() {
   try {

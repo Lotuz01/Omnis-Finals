@@ -3,7 +3,7 @@ import { dbPool, withTransaction } from '../../../utils/database-pool';
 import { cookies } from 'next/headers';
 import { logger } from '../../../utils/logger';
 import { validator, schemas } from '../../../utils/validation';
-import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/redis';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
 
 

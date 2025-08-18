@@ -1,7 +1,5 @@
 // Sistema de logging avançado para produção
-import fs from 'fs';
-import path from 'path';
-import { createWriteStream, WriteStream } from 'fs';
+import { connectToDatabase } from '../utils/database-pool';
 
 export enum LogLevel {
   ERROR = 0,
@@ -27,20 +25,10 @@ interface LogEntry {
 interface LoggerConfig {
   level: LogLevel;
   console: boolean;
-  file: boolean;
-  filePath?: string;
-  errorFilePath?: string;
-  maxFileSize?: number;
-  maxFiles?: number;
-  format?: 'json' | 'text';
 }
 
 class Logger {
   private config: LoggerConfig;
-  private fileStream?: WriteStream;
-  private errorFileStream?: WriteStream;
-  private currentFileSize: number = 0;
-  private currentErrorFileSize: number = 0;
   private logs: LogEntry[] = [];
   private maxMemoryLogs = 1000;
 
@@ -48,18 +36,8 @@ class Logger {
     this.config = {
       level: this.parseLogLevel(process.env.LOG_LEVEL) || LogLevel.INFO,
       console: true,
-      file: process.env.LOG_FILE ? true : false,
-      filePath: process.env.LOG_FILE || './logs/app.log',
-      errorFilePath: process.env.LOG_ERROR_FILE || './logs/error.log',
-      maxFileSize: this.parseSize(process.env.LOG_MAX_SIZE) || 100 * 1024 * 1024, // 100MB
-      maxFiles: parseInt(process.env.LOG_MAX_FILES || '10'),
-      format: 'json',
       ...config
     };
-
-    if (this.config.file && this.config.filePath) {
-      this.initFileLogging();
-    }
   }
 
   private parseLogLevel(level?: string): LogLevel | undefined {
@@ -71,91 +49,6 @@ class Logger {
       case 'info': return LogLevel.INFO;
       case 'debug': return LogLevel.DEBUG;
       default: return undefined;
-    }
-  }
-
-  private parseSize(size?: string): number | undefined {
-    if (!size) return undefined;
-    
-    const match = size.match(/^(\d+)(\w+)?$/);
-    if (!match) return undefined;
-    
-    const value = parseInt(match[1]);
-    const unit = (match[2] || '').toLowerCase();
-    
-    switch (unit) {
-      case 'kb': return value * 1024;
-      case 'mb': return value * 1024 * 1024;
-      case 'gb': return value * 1024 * 1024 * 1024;
-      default: return value;
-    }
-  }
-
-  private initFileLogging() {
-    if (!this.config.filePath) return;
-    
-    const logDir = path.dirname(this.config.filePath);
-    const errorLogDir = path.dirname(this.config.errorFilePath!);
-    
-    // Criar diretórios se não existirem
-    [logDir, errorLogDir].forEach(dir => {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-    });
-    
-    // Inicializar streams
-    this.fileStream = createWriteStream(this.config.filePath, { flags: 'a' });
-    this.errorFileStream = createWriteStream(this.config.errorFilePath!, { flags: 'a' });
-    
-    // Verificar tamanhos atuais
-    if (fs.existsSync(this.config.filePath)) {
-      this.currentFileSize = fs.statSync(this.config.filePath).size;
-    }
-    if (fs.existsSync(this.config.errorFilePath!)) {
-      this.currentErrorFileSize = fs.statSync(this.config.errorFilePath!).size;
-    }
-  }
-
-  private rotateLogFile(filePath: string, isError = false) {
-    const stream = isError ? this.errorFileStream : this.fileStream;
-    
-    if (stream) {
-      stream.end();
-    }
-    
-    const ext = path.extname(filePath);
-    const base = path.basename(filePath, ext);
-    const dir = path.dirname(filePath);
-    
-    // Rotacionar arquivos
-    for (let i = this.config.maxFiles! - 1; i > 0; i--) {
-      const oldFile = path.join(dir, `${base}.${i}${ext}`);
-      const newFile = path.join(dir, `${base}.${i + 1}${ext}`);
-      
-      if (fs.existsSync(oldFile)) {
-        if (i === this.config.maxFiles! - 1) {
-          fs.unlinkSync(oldFile);
-        } else {
-          fs.renameSync(oldFile, newFile);
-        }
-      }
-    }
-    
-    const rotatedFile = path.join(dir, `${base}.1${ext}`);
-    if (fs.existsSync(filePath)) {
-      fs.renameSync(filePath, rotatedFile);
-    }
-    
-    // Criar novo stream
-    const newStream = createWriteStream(filePath, { flags: 'a' });
-    
-    if (isError) {
-      this.errorFileStream = newStream;
-      this.currentErrorFileSize = 0;
-    } else {
-      this.fileStream = newStream;
-      this.currentFileSize = 0;
     }
   }
 
@@ -178,35 +71,6 @@ class Logger {
     this.logs.push(entry);
     if (this.logs.length > this.maxMemoryLogs) {
       this.logs.shift();
-    }
-  }
-
-  private writeToFile(entry: LogEntry) {
-    if (!this.config.file) return;
-    
-    const logLine = this.config.format === 'json' 
-      ? JSON.stringify(entry) + '\n'
-      : `${entry.timestamp} [${entry.level}] ${entry.message}${entry.data ? ' ' + JSON.stringify(entry.data) : ''}\n`;
-    
-    const isError = entry.level === 'ERROR';
-    const stream = isError ? this.errorFileStream : this.fileStream;
-    const filePath = isError ? this.config.errorFilePath! : this.config.filePath!;
-    
-    if (stream) {
-      stream.write(logLine);
-      
-      const lineSize = Buffer.byteLength(logLine);
-      if (isError) {
-        this.currentErrorFileSize += lineSize;
-        if (this.currentErrorFileSize >= this.config.maxFileSize!) {
-          this.rotateLogFile(filePath, true);
-        }
-      } else {
-        this.currentFileSize += lineSize;
-        if (this.currentFileSize >= this.config.maxFileSize!) {
-          this.rotateLogFile(filePath, false);
-        }
-      }
     }
   }
 
@@ -240,14 +104,38 @@ class Logger {
     }
   }
 
-  private log(level: LogLevel, message: string, data?: any, stack?: string, context?: any) {
+  private async writeToDatabase(entry: LogEntry) {
+    const connection = await connectToDatabase();
+    try {
+      await connection.execute(
+        `INSERT INTO logs (level, message, data, stack, request_id, user_id, ip, user_agent, operation, duration)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          entry.level,
+          entry.message,
+          entry.data ? JSON.stringify(entry.data) : null,
+          entry.stack || null,
+          entry.requestId || null,
+          entry.userId || null,
+          entry.ip || null,
+          entry.userAgent || null,
+          entry.operation || null,
+          entry.duration || null
+        ]
+      );
+    } finally {
+      connection.release();
+    }
+  }
+
+  private async log(level: LogLevel, message: string, data?: any, stack?: string, context?: any) {
     if (!this.shouldLog(level)) return;
     
     const entry = this.formatMessage(level, message, data, stack, context);
     
     this.addToMemory(entry);
     this.writeToConsole(entry);
-    this.writeToFile(entry);
+    await this.writeToDatabase(entry);
   }
 
   // Métodos públicos
@@ -447,12 +335,6 @@ class Logger {
 
   // Método para cleanup de recursos
   async close(): Promise<void> {
-    if (this.fileStream) {
-      this.fileStream.end();
-    }
-    if (this.errorFileStream) {
-      this.errorFileStream.end();
-    }
   }
 }
 

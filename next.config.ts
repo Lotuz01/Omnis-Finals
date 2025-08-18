@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
   },
   typescript: {
     // Durante o build, ignorar erros de tipo para acelerar o processo

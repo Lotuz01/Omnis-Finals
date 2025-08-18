@@ -24,7 +24,7 @@ Este guia explica como configurar o banco de dados MySQL para produção do Sist
 
 **Variáveis no .env.production:**
 ```env
-DATABASE_URL=mysql://root:senha@containers-us-west-xxx.railway.app:6543/railway
+DATABASE_URL=mysql://root:senha@seu-host.railway.app:6543/railway
 DB_SSL=true
 DB_POOL_MAX=25
 ```

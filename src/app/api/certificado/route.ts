@@ -243,11 +243,11 @@ async function handleConfigurarCertificado(body: { config: CertificadoConfig }) 
     const { config } = body;
     
     // Validar dados de entrada
-    if (!config || !config.tipo || !config.caminho || !config.senha || !config.cnpj) {
+    if (!config || !config.tipo || !config.nome || !config.senha || !config.cnpj) {
       return NextResponse.json(
         { 
           error: 'Dados de configuração incompletos',
-          required: ['tipo', 'caminho', 'senha', 'cnpj']
+          required: ['tipo', 'nome', 'senha', 'cnpj']
         },
         { status: 400 }
       );
@@ -272,7 +272,7 @@ async function handleConfigurarCertificado(body: { config: CertificadoConfig }) 
     // Criar configuração
     const certificadoConfig: CertificadoConfig = {
       tipo: config.tipo,
-      caminho: config.caminho,
+      nome: config.nome,
       senha: config.senha,
       cnpj: config.cnpj.replace(/[^\d]/g, ''), // Limpar formatação
       validade: new Date(config.validade || '2025-12-31'),
@@ -509,7 +509,7 @@ export function obterCertificadoService(): CertificadoService | null {
 export async function inicializarCertificadoDoEnvironment(): Promise<boolean> {
   try {
     // Verificar se as variáveis de ambiente estão configuradas
-    if (!process.env.CERTIFICADO_CAMINHO || !process.env.CERTIFICADO_SENHA) {
+    if (!process.env.CERTIFICADO_NOME || !process.env.CERTIFICADO_SENHA) {
       console.log('[API Certificado] Variáveis de ambiente não configuradas - certificado não será inicializado');
       return false;
     }

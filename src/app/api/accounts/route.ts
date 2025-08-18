@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { dbPool } from '@/utils/database-pool';
 import { cookies } from 'next/headers';
-import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/redis';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
 
 // GET - Listar todas as contas

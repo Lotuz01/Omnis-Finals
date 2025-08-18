@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs').promises;
+const path = require('path');
 require('dotenv').config({ path: './.env.local' });
 
 console.log('DB_HOST:', process.env.DB_HOST);
@@ -17,7 +18,7 @@ async function createMovementsTable() {
       database: process.env.DB_NAME,
     });
 
-    const sql = await fs.readFile('create_movements_table.sql', 'utf8');
+    const sql = await fs.readFile(path.join(__dirname, 'create_movements_table.sql'), 'utf8');
     await connection.execute(sql);
     console.log('SQL script executed successfully: movements table created.');
   } catch (error) {

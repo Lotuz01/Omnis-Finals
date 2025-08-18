@@ -25,12 +25,7 @@ const loginRateLimit = {
   }
 };
 
-// Rate limiting progressivo para tentativas de login falhadas
-const bruteForceProtection = {
-  maxAttempts: 5, // Máximo de tentativas antes de aplicar delay
-  lockoutDuration: 1800000, // 30 minutos de bloqueio
-  progressiveDelay: true // Delay progressivo
-};
+
 
 // Headers de segurança
 const SECURITY_HEADERS = {
@@ -78,7 +73,7 @@ const SECURITY_HEADERS = {
   'Expires': '0'
 };
 
-// Lista de IPs bloqueados (em produção, usar Redis ou banco)
+// Lista de IPs bloqueados (em produção, usar banco ou cache persistente)
 const blockedIPs = new Set<string>();
 const suspiciousIPs = new Map<string, { count: number; lastSeen: number }>();
 

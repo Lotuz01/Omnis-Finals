@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNotify } from '@/contexts/notifications-context';
 import { useConfirmation } from '@/components/ui/confirmation-modal';
 
@@ -39,11 +39,7 @@ const ClientsPage = () => {
   const [loading, setLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('/api/clients');
@@ -61,7 +57,11 @@ const ClientsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notifyError, setClients, setLoading]);
+
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const isValidCNPJ = (cnpj: string) => {
     const cleanCNPJ = cnpj.replace(/\D/g, '');

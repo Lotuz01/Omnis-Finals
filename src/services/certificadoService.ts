@@ -1,13 +1,17 @@
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+// Remove these lines:
+// import fs from 'fs';
+// import path from 'path';
+import { connectToDatabase } from '../utils/database-pool';
+import forge from 'node-forge';
+import { SignedXml } from 'xml-crypto';
+import { RowDataPacket } from 'mysql2/promise';
 
 /**
  * Interface para configuração do certificado digital
  */
 export interface CertificadoConfig {
   tipo: 'A1' | 'A3';
-  caminho: string;
+  nome: string; // Alterado de caminho para nome
   senha: string;
   cnpj: string;
   validade: Date;
@@ -59,11 +63,6 @@ export class CertificadoService {
       // Validar configuração
       if (!this.validarConfiguracao()) {
         throw new Error('Configuração de certificado inválida');
-      }
-
-      // Verificar se o arquivo existe
-      if (!fs.existsSync(this.config.caminho)) {
-        throw new Error(`Arquivo de certificado não encontrado: ${this.config.caminho}`);
       }
 
       // Carregar certificado baseado no tipo
@@ -197,7 +196,7 @@ export class CertificadoService {
       validade: this.config.validade,
       ativo: this.config.ativo,
       carregado: this.certificadoCarregado,
-      arquivo: path.basename(this.config.caminho)
+      nome: this.config.nome // Alterado de arquivo
     };
   }
 
@@ -206,7 +205,7 @@ export class CertificadoService {
    */
   private validarConfiguracao(): boolean {
     const camposObrigatorios = [
-      this.config.caminho,
+      this.config.nome,
       this.config.senha,
       this.config.cnpj,
       this.config.tipo
@@ -234,26 +233,42 @@ export class CertificadoService {
    */
   private async carregarCertificado(): Promise<void> {
     try {
-      fs.readFileSync(this.config.caminho);
+      const connection = await connectToDatabase();
+      const [rows] = await connection.execute<RowDataPacket[]>(
+        'SELECT content, password FROM certificates WHERE name = ?',
+        [this.config.nome]
+      );
+      if (rows.length === 0) {
+        throw new Error(`Certificado não encontrado: ${this.config.nome}`);
+      }
+      const { content, password } = rows[0] as { content: Buffer; password: string | null };
+      this.config.senha = password || this.config.senha;
+      
+      const certificadoBuffer = Buffer.from(content);
       
       if (this.config.tipo === 'A1') {
-        // Certificado A1 - arquivo .pfx/.p12
-        // TODO: Implementar carregamento de certificado PKCS12 usando biblioteca adequada (ex: node-forge)
-        // this.certificadoData = crypto.createPKCS12(certificadoBuffer, this.config.senha);
+        const p12 = forge.pkcs12.pkcs12FromAsn1(
+          forge.asn1.fromDer(forge.util.createBuffer(certificadoBuffer.toString('binary'))),
+          this.config.senha
+        );
         
-        // Simulação temporária para evitar erro de compilação
-        this.certificadoData = { key: null, cert: null };
-        
-        if (!this.certificadoData) {
-          throw new Error('Falha ao carregar certificado A1 - senha incorreta ou arquivo corrompido');
+        const bags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+        const keyBag = bags[forge.pki.oids.pkcs8ShroudedKeyBag]?.[0];
+        if (!keyBag || !keyBag.key) {
+          throw new Error('Chave privada não encontrada no certificado PKCS12');
         }
-        
-        // Extrair chave privada e certificado
-        this.chavePrivada = this.certificadoData.key;
-        this.certificadoPublico = this.certificadoData.cert;
+        this.chavePrivada = forge.pki.privateKeyToPem(keyBag.key);
+
+        const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
+        const certBag = certBags[forge.pki.oids.certBag]?.[0];
+        if (!certBag || !certBag.cert) {
+          throw new Error('Certificado não encontrado no PKCS12');
+        }
+        this.certificadoPublico = forge.pki.certificateToPem(certBag.cert);
+
+        this.certificadoData = p12;
         
       } else if (this.config.tipo === 'A3') {
-        // Certificado A3 - requer integração com hardware
         throw new Error('Certificado A3 não implementado nesta versão. Use certificado A1 ou integre com API externa.');
       }
       
@@ -311,39 +326,24 @@ export class CertificadoService {
    */
   private async assinarXML(dados: DadosAssinatura): Promise<string | null> {
     try {
-      // Esta é uma implementação simplificada
-      // Em produção, usar biblioteca como xml-crypto ou xml2js + node-forge
-      
       console.log('[CertificadoService] Iniciando processo de assinatura XML');
       
-      // Validar se temos os componentes necessários
       if (!this.chavePrivada || !this.certificadoPublico) {
         throw new Error('Chave privada ou certificado público não disponível');
       }
       
-      // Preparar XML para assinatura
-      const xmlParaAssinar = dados.xmlContent;
-      
-      // Encontrar ou criar o elemento de referência
-      const referenceId = dados.referenceId || 'NFe';
-      
-      // Gerar hash do conteúdo
-      const hash = crypto.createHash('sha1');
-      hash.update(xmlParaAssinar, 'utf8');
-      const digestValue = hash.digest('base64');
-      
-      // Criar assinatura
-      const sign = crypto.createSign('RSA-SHA1');
-      sign.update(xmlParaAssinar, 'utf8');
-      const signature = sign.sign(this.chavePrivada, 'base64');
-      
-      // Montar XML com assinatura
-      const xmlAssinado = this.montarXMLComAssinatura(
-        xmlParaAssinar,
-        signature,
-        digestValue,
-        referenceId
-      );
+      const signer = new SignedXml();
+signer.addReference({
+  xpath: "//*[local-name(.)='infNFe']",
+  transforms: ["http://www.w3.org/2000/09/xmldsig#enveloped-signature", "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"],
+  digestAlgorithm: "http://www.w3.org/2000/09/xmldsig#sha1"
+});
+signer.signingKey = this.chavePrivada;
+signer.keyInfoProvider = {
+  getKeyInfo: () => `<X509Data><X509Certificate>${this.obterCertificadoBase64()}</X509Certificate></X509Data>`
+};
+
+const xmlAssinado = signer.sign(dados.xmlContent);
       
       console.log('[CertificadoService] XML assinado com sucesso');
       return xmlAssinado;
@@ -400,9 +400,9 @@ export class CertificadoService {
    */
   private obterCertificadoBase64(): string {
     try {
-      // Em uma implementação real, extrair o certificado em formato Base64
-      // Por enquanto, retornar um placeholder
-      return 'CERTIFICADO_BASE64_PLACEHOLDER';
+      const cert = forge.pki.certificateFromPem(this.certificadoPublico);
+      const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
+      return forge.util.encode64(der);
     } catch (error) {
       console.error('[CertificadoService] Erro ao obter certificado Base64:', error);
       return '';
@@ -428,20 +428,14 @@ export class CertificadoService {
    */
   private validarAssinatura(xmlAssinado: string): boolean {
     try {
-      // Verificar se contém elementos de assinatura
-      const contemAssinatura = xmlAssinado.includes('<Signature') && 
-                              xmlAssinado.includes('<SignatureValue>') &&
-                              xmlAssinado.includes('<X509Certificate>');
-      
-      if (!contemAssinatura) {
-        console.error('[CertificadoService] XML não contém elementos de assinatura válidos');
+      const verifier = new SignedXml();
+      const isValid = verifier.verifySignature(xmlAssinado);
+      if (!isValid) {
+        console.error('[CertificadoService] Assinatura inválida');
         return false;
       }
-      
-      // Em produção, implementar validação completa da assinatura
       console.log('[CertificadoService] Assinatura validada com sucesso');
       return true;
-      
     } catch (error) {
       console.error('[CertificadoService] Erro ao validar assinatura:', error);
       return false;
@@ -473,7 +467,7 @@ export class CertificadoServiceFactory {
   static criarDoEnvironment(): CertificadoService {
     const config: CertificadoConfig = {
       tipo: (process.env.CERTIFICADO_TIPO as 'A1' | 'A3') || 'A1',
-      caminho: process.env.CERTIFICADO_CAMINHO || '',
+      nome: process.env.CERTIFICADO_NOME || '', // Alterado de CERTIFICADO_CAMINHO
       senha: process.env.CERTIFICADO_SENHA || '',
       cnpj: process.env.CERTIFICADO_CNPJ || '',
       validade: new Date(process.env.CERTIFICADO_VALIDADE || '2025-12-31'),
