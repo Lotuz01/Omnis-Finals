@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { dbPool } from '@/utils/database-pool';
 import { cookies } from 'next/headers';
 import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
 
 // GET - Listar todas as contas
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;
@@ -63,8 +63,13 @@ export async function GET(request: Request) {
       params.push(status);
     }
     
-    query += ' ORDER BY a.due_date ASC';
-    
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
+    // Modify query to add LIMIT and OFFSET
+    query += ' ORDER BY a.due_date ASC LIMIT ? OFFSET ?';
+    params.push(limit.toString(), offset.toString());
     const [rows] = await dbPool.execute(query, params) as [unknown[], unknown];
     
     // Atualizar status para vencido se necessário - usando índice idx_accounts_status_due_date
@@ -75,9 +80,16 @@ export async function GET(request: Request) {
     );
     
     // Cache do resultado por 5 minutos
-    await cache.set(cacheKey, rows, CACHE_TTL.MEDIUM);
-    
-    return NextResponse.json(rows);
+    // Contagem total
+    const countQuery = query.replace('SELECT a.*, u.name as user_name', 'SELECT COUNT(*) as total').replace('LIMIT ? OFFSET ?', '');
+    const [countRows] = await dbPool.execute(countQuery, params.slice(0, -2)) as [Array<{ total: number }>, unknown];
+    const total = countRows[0].total;
+    const responseData = {
+      accounts: rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+    await cache.set(cacheKey, JSON.stringify(responseData), CACHE_TTL.MEDIUM);
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Error fetching accounts:', error);
     return NextResponse.json(

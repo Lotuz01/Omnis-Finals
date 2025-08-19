@@ -2,22 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
-interface User {
-  id: number;
-  username: string;
-  name: string;
-  isAdmin: boolean;
-}
 
-interface SystemStats {
-  totalUsers: number;
-}
+
 
 export default function AdminPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState<SystemStats | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -28,8 +18,6 @@ export default function AdminPage() {
         if (response.ok) {
           const userData = await response.json();
           if (userData.isAdmin) {
-            setUser(userData);
-            await loadSystemStats();
           } else {
             // Usuário não é admin, redirecionar para dashboard comum
             router.push('/dashboard');
@@ -50,19 +38,7 @@ export default function AdminPage() {
     checkAdminAccess();
   }, [router]);
 
-  const loadSystemStats = async () => {
-    try {
-      // Carregar apenas estatísticas de usuários
-      const usersRes = await fetch('/api/users');
-      const users = usersRes.ok ? await usersRes.json() : [];
-
-      setStats({
-        totalUsers: Array.isArray(users) ? users.length : 0
-      });
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
-    }
-  };
+  
 
   const handleLogout = async () => {
     try {

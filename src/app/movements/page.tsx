@@ -46,7 +46,7 @@ const MovementsPage: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.products || []);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(`Failed to fetch products: ${errorMessage}`);
@@ -120,7 +120,7 @@ const MovementsPage: React.FC = () => {
   return (
     <div className="p-3 sm:p-6">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 flex items-center">
-        <Image src="/entrada-e-saida.png" alt="Ícone de Entrada e Saída" width={32} height={32} className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" />
+        <Image src="/entrada-e-saida.png" alt="Ícone de Entrada e Saída" width={32} height={32} className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" loading="lazy" />
         <span className="hidden sm:inline">Entrada e Saída de Itens</span>
         <span className="sm:hidden">Movimentações</span>
       </h1>
@@ -257,10 +257,7 @@ const MovementsPage: React.FC = () => {
                       <span className="text-gray-500">Quantidade:</span>
                       <p className="font-medium text-gray-900">{movement.quantity}</p>
                     </div>
-                    <div>
-                      <span className="text-gray-500">Usuário:</span>
-                      <p className="font-medium text-gray-900 truncate">{movement.user_name}</p>
-                    </div>
+
                   </div>
                   
                   {movement.reason && (
@@ -283,7 +280,7 @@ const MovementsPage: React.FC = () => {
                     <th className="py-3 px-4 border-b border-gray-200 text-center text-sm font-semibold text-gray-700">Tipo</th>
                     <th className="py-3 px-4 border-b border-gray-200 text-center text-sm font-semibold text-gray-700">Quantidade</th>
                     <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Motivo</th>
-                    <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Usuário</th>
+  
                   </tr>
                 </thead>
                 <tbody>
@@ -310,9 +307,7 @@ const MovementsPage: React.FC = () => {
                       <td className="py-3 px-4 border-b border-gray-200">
                         <div className="text-gray-600 max-w-xs truncate">{movement.reason || '-'}</div>
                       </td>
-                      <td className="py-3 px-4 border-b border-gray-200">
-                        <div className="text-gray-900">{movement.user_name}</div>
-                      </td>
+
                     </tr>
                   ))}
                 </tbody>

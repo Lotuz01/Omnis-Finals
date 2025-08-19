@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { IconUser, IconLock, IconEye, IconEyeOff, IconBrandTabler } from '@tabler/icons-react';
+import { User, Lock, Eye, EyeOff, LayoutDashboard } from 'lucide-react';
+
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -63,7 +64,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
           <div className="flex items-center mb-8">
-            <IconBrandTabler className="h-12 w-12 mr-4" />
+            <LayoutDashboard className="h-12 w-12 mr-4" />
             <h1 className="text-4xl font-bold">Sistema de Gestão OMNIS</h1>
           </div>
           <h2 className="text-2xl font-semibold mb-4">Bem-vindo de volta!</h2>
@@ -97,7 +98,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:hidden">
             <div className="flex items-center justify-center mb-6">
-              <IconBrandTabler className="h-10 w-10 text-primary mr-3" />
+              <LayoutDashboard className="h-10 w-10 text-primary mr-3" />
               <h1 className="text-2xl font-bold text-gray-900">Sistema de Gestão</h1>
             </div>
           </div>
@@ -121,7 +122,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="username">Usuário</Label>
                     <div className="relative">
-                      <IconUser className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="username"
                         name="username"
@@ -138,7 +139,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="password">Senha</Label>
                     <div className="relative">
-                      <IconLock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="password"
                         name="password"
@@ -155,9 +156,9 @@ export default function LoginPage() {
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
-                          <IconEyeOff className="h-4 w-4 text-gray-500 hover:text-gray-900" />
+                          <EyeOff className="h-4 w-4 text-gray-500 hover:text-gray-900" />
                         ) : (
-                          <IconEye className="h-4 w-4 text-gray-500 hover:text-gray-900" />
+                          <Eye className="h-4 w-4 text-gray-500 hover:text-gray-900" />
                         )}
                       </button>
                     </div>

@@ -99,6 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
               width={160} 
               height={160} 
               className="w-32 lg:w-56 h-auto"
+              loading="lazy"
             />
           </Link>
         </div>
@@ -113,7 +114,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
                     className="block py-3 px-4 rounded hover:bg-gray-700 transition duration-200 flex items-center text-sm lg:text-base"
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <Image src="/stock-icon.png" alt="Ícone de Estoque" width={20} height={20} className="mr-3 filter brightness-0 invert" />
+                    <Image src="/stock-icon.png" alt="Ícone de Estoque" width={20} height={20} className="mr-3 filter brightness-0 invert" loading="lazy" />
                     <span className="truncate">Estoque</span>
                   </Link>
                 </li>
@@ -123,7 +124,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
                     className="block py-3 px-4 rounded hover:bg-gray-700 transition duration-200 flex items-center text-sm lg:text-base"
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <Image src="/entrada-e-saida.png" alt="Ícone de Entrada e Saída" width={20} height={20} className="mr-3 filter brightness-0 invert" />
+                    <Image src="/entrada-e-saida.png" alt="Ícone de Entrada e Saída" width={20} height={20} className="mr-3 filter brightness-0 invert" loading="lazy" />
                     <span className="truncate">Movimentações</span>
                   </Link>
                 </li>
@@ -133,7 +134,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
                     className="block py-3 px-4 rounded hover:bg-gray-700 transition duration-200 flex items-center text-sm lg:text-base"
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <Image src="/money.png" alt="Ícone de Dinheiro" width={20} height={20} className="mr-3 filter brightness-0 invert" />
+                    <Image src="/money.png" alt="Ícone de Dinheiro" width={20} height={20} className="mr-3 filter brightness-0 invert" loading="lazy" />
                     <span className="truncate">Contas</span>
                   </Link>
                 </li>
@@ -143,7 +144,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, isAdmin }) => {
                     className="block py-3 px-4 rounded hover:bg-gray-700 transition duration-200 flex items-center text-sm lg:text-base"
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <Image src="/cliente.png" alt="Ícone de Clientes" width={20} height={20} className="mr-3 filter brightness-0 invert" />
+                    <Image src="/cliente.png" alt="Ícone de Clientes" width={20} height={20} className="mr-3 filter brightness-0 invert" loading="lazy" />
                     <span className="truncate">Clientes</span>
                   </Link>
                 </li>

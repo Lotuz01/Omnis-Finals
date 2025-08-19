@@ -495,18 +495,12 @@ async function handleRemoverCertificado() {
   }
 }
 
-/**
- * Função utilitária para obter instância do certificado
- * Pode ser usada por outras APIs que precisam do certificado
- */
-export function obterCertificadoService(): CertificadoService | null {
-  return certificadoServiceInstance;
-}
+
 
 /**
  * Função para inicializar certificado do environment na inicialização do servidor
  */
-export async function inicializarCertificadoDoEnvironment(): Promise<boolean> {
+async function inicializarCertificadoDoEnvironment(): Promise<boolean> {
   try {
     // Verificar se as variáveis de ambiente estão configuradas
     if (!process.env.CERTIFICADO_NOME || !process.env.CERTIFICADO_SENHA) {

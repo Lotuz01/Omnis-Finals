@@ -61,6 +61,13 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 function securityMiddleware(request: NextRequest): NextResponse {
   const rateLimitKey = getRateLimitKey(request);
   
+  if (process.env.NODE_ENV !== 'production') {
+    // Disable rate limiting in development
+    const response = NextResponse.next();
+    response.headers.set('x-middleware-next', 'true');
+    return addSecurityHeaders(response);
+  }
+  
   if (isRateLimited(rateLimitKey)) {
     return new NextResponse('Too Many Requests', { status: 429 });
   }

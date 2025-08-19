@@ -101,7 +101,7 @@ SET @sql = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
      WHERE table_schema = 'sistema_gestao' AND table_name = 'clients' AND index_name = 'idx_clients_name_sorted') > 0,
     'SELECT "Index idx_clients_name_sorted already exists"',
-    'CREATE INDEX idx_clients_name_sorted ON clients(name ASC)'
+    'CREATE INDEX idx_clients_name_sorted ON clients(company_name ASC)'
 ));
 PREPARE stmt FROM @sql;
 EXECUTE stmt;

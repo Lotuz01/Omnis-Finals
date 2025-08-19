@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../../database';
 import { getApiMetrics } from '../../../lib/metrics';
-import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
+import { cache } from '../../../lib/cache';
 import os from 'os';
 
 interface Metrics {

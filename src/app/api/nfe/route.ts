@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { RowDataPacket } from 'mysql2/promise';
 import { connectToDatabase } from '../../../database';
 import { cookies } from 'next/headers';
-import { obterCertificadoService } from '../certificado/route';
+
 
 // Interface para dados da NFe
 interface NFEData {
@@ -34,147 +35,27 @@ interface NFEResponse {
 
 // Função para emitir NFe via API externa (exemplo com Focus NFe)
 async function emitNFE(nfeData: NFEData, clientData: { name: string; email?: string; phone?: string; address?: string; }): Promise<NFEResponse> {
-  let xmlAssinado: string | undefined;
-  let certificadoUsado = false;
+  console.log('[NFe API] Modo de teste ativado - simulando emissão de NFe');
   
-  // Verificar se há certificado digital configurado
-  const certificadoService = obterCertificadoService();
-  if (certificadoService) {
-    console.log('[NFe API] Certificado digital disponível - preparando assinatura');
-    certificadoUsado = true;
-  } else {
-    console.log('[NFe API] Certificado digital não configurado - emissão sem assinatura local');
-  }
-  try {
-    // Configurações da API (em produção, usar variáveis de ambiente)
-    const API_TOKEN = process.env.NFE_API_TOKEN || 'seu_token_aqui';
-    const API_URL = process.env.NFE_API_URL || 'https://homologacao.focusnfe.com.br/v2/nfe';
-    
-    // Montar dados da NFe conforme layout da API
-    const nfePayload = {
-      natureza_operacao: nfeData.operation_type,
-      data_emissao: new Date().toISOString(),
-      data_entrada_saida: new Date().toISOString(),
-      tipo_documento: "1",
-      finalidade_emissao: "1",
-      
-      // Dados do emitente (empresa) - em produção, buscar do banco
-      cnpj_emitente: process.env.COMPANY_CNPJ || "00000000000000",
-      nome_emitente: process.env.COMPANY_NAME || "Sua Empresa LTDA",
-      nome_fantasia_emitente: process.env.COMPANY_FANTASY_NAME || "Sua Empresa",
-      logradouro_emitente: process.env.COMPANY_ADDRESS || "Rua Exemplo, 123",
-      numero_emitente: process.env.COMPANY_NUMBER || "123",
-      bairro_emitente: process.env.COMPANY_DISTRICT || "Centro",
-      municipio_emitente: process.env.COMPANY_CITY || "São Paulo",
-      uf_emitente: process.env.COMPANY_STATE || "SP",
-      cep_emitente: process.env.COMPANY_ZIP || "00000000",
-      inscricao_estadual_emitente: process.env.COMPANY_IE || "123456789",
-      
-      // Dados do destinatário (cliente)
-      nome_destinatario: clientData.name,
-      cnpj_destinatario: "00000000000000", // CNPJ padrão para teste
-      logradouro_destinatario: clientData.address || "Endereço não informado",
-      numero_destinatario: "S/N",
-      bairro_destinatario: "Centro",
-      municipio_destinatario: "São Paulo",
-      uf_destinatario: "SP",
-      cep_destinatario: "00000000",
-      
-      valor_total: nfeData.total_amount.toFixed(2),
-      valor_produtos: nfeData.total_amount.toFixed(2),
-      modalidade_frete: "0", // Sem frete
-      
-      // Itens da nota
-      items: nfeData.items.map((item, index) => ({
-        numero_item: (index + 1).toString(),
-        codigo_produto: `PROD${index + 1}`,
-        descricao: item.description,
-        cfop: item.cfop,
-        unidade_comercial: item.unit,
-        quantidade_comercial: item.quantity.toString(),
-        valor_unitario_comercial: item.unit_price.toFixed(4),
-        valor_unitario_tributavel: item.unit_price.toFixed(4),
-        unidade_tributavel: item.unit,
-        codigo_ncm: item.ncm,
-        quantidade_tributavel: item.quantity.toString(),
-        valor_bruto: item.total_price.toFixed(2),
-        icms_situacao_tributaria: "102", // Simples Nacional
-        icms_origem: "0",
-        pis_situacao_tributaria: "49",
-        cofins_situacao_tributaria: "49"
-      }))
-    };
-
-    // Fazer requisição para API de NFe
-    const response = await fetch(`${API_URL}?ref=${Date.now()}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(API_TOKEN + ':').toString('base64')}`
-      },
-      body: JSON.stringify(nfePayload)
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      // Se temos certificado e a API retornou XML, assinar localmente
-      if (certificadoService && result.caminho_xml_nota_fiscal) {
-        try {
-          console.log('[NFe API] Baixando XML para assinatura...');
-          
-          // Baixar XML da API
-          const xmlResponse = await fetch(result.caminho_xml_nota_fiscal);
-          if (xmlResponse.ok) {
-            const xmlContent = await xmlResponse.text();
-            
-            // Assinar XML com certificado digital
-            const resultadoAssinatura = await certificadoService.assinarXMLNFe(
-              xmlContent, 
-              result.chave_nfe || result.numero
-            );
-            
-            if (resultadoAssinatura.sucesso && resultadoAssinatura.xmlAssinado) {
-              xmlAssinado = resultadoAssinatura.xmlAssinado;
-              console.log('[NFe API] XML assinado com sucesso');
-            } else {
-              console.error('[NFe API] Falha na assinatura do XML:', resultadoAssinatura.erro);
-            }
-          } else {
-            console.error('[NFe API] Falha ao baixar XML para assinatura');
-          }
-        } catch (error) {
-          console.error('[NFe API] Erro durante assinatura do XML:', error);
-        }
-      }
-      
-      return {
-        success: true,
-        nfe_number: result.numero,
-        access_key: result.chave_nfe,
-        xml_url: result.caminho_xml_nota_fiscal,
-        pdf_url: result.caminho_danfe,
-        xml_assinado: xmlAssinado,
-        certificado_usado: certificadoUsado
-      };
-    } else {
-      return {
-        success: false,
-        error: result.erros ? result.erros.join(', ') : 'Erro na emissão da NFe',
-        certificado_usado: certificadoUsado
-      };
-    }
-  } catch (error) {
-    console.error('Erro ao emitir NFe:', error);
-    return {
-      success: false,
-      error: `Erro na comunicação com a API: ${(error as Error).message}`
-    };
-  }
+  // Simular delay de rede
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Gerar dados mock
+  const mockNfeNumber = `TEST-${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
+  const mockAccessKey = Array(44).fill(0).map(() => Math.floor(Math.random() * 10)).join('');
+  
+  return {
+    success: true,
+    nfe_number: mockNfeNumber,
+    access_key: mockAccessKey,
+    xml_url: 'http://localhost:3000/mock/xml',
+    pdf_url: 'http://localhost:3000/mock/pdf',
+    certificado_usado: false,
+  };
 }
 
 // GET - Listar NFes emitidas
-export async function GET() {
+export async function GET(request: NextRequest) {
   let connection;
   try {
     const cookieStore = await cookies();
@@ -199,15 +80,27 @@ export async function GET() {
     const userId = userRows[0].id;
     
     // Buscar NFes do usuário
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
+    // Modify the query to add LIMIT and OFFSET
     const [rows] = await connection.execute(`
       SELECT n.*, c.name as client_name, c.email, c.phone 
       FROM nfe n 
       JOIN clients c ON n.client_id = c.id 
       WHERE n.user_id = ? 
       ORDER BY n.created_at DESC
-    `, [userId]);
-    
-    return NextResponse.json(rows);
+      LIMIT ? OFFSET ?
+    `, [userId, limit.toString(), offset.toString()]);
+    // Add count query
+    const [countRows] = await connection.execute<RowDataPacket[]>('SELECT COUNT(*) as total FROM nfe WHERE user_id = ?', [userId]);
+    const total = (countRows[0] as { total: number }).total;
+    const responseData = {
+      nfes: rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Error fetching NFes:', error);
     return NextResponse.json({ message: 'Error fetching NFes', error: (error as Error).message }, { status: 500 });

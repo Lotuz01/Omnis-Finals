@@ -27,6 +27,16 @@ const CACHE_CONFIG = {
     ttl: CACHE_TTL.SHORT,
     key: CACHE_KEYS.STATS,
     methods: ['GET']
+  },
+  '/api/user/stats': {
+    ttl: CACHE_TTL.SHORT,
+    key: CACHE_KEYS.USER_STATS,
+    methods: ['GET']
+  },
+  '/api/user/activities': {
+    ttl: CACHE_TTL.SHORT,
+    key: CACHE_KEYS.USER_ACTIVITIES,
+    methods: ['GET']
   }
 };
 
@@ -36,12 +46,13 @@ function generateCacheKey(request: NextRequest): string {
   const pathname = url.pathname;
   const searchParams = url.searchParams.toString();
   const method = request.method;
+  const userId = request.cookies.get('userId')?.value || 'anonymous';
   
   // Incluir parâmetros de query na chave para cache específico
   const baseKey = pathname.replace('/api/', '');
   const queryKey = searchParams ? `?${searchParams}` : '';
   
-  return `api:${baseKey}:${method}${queryKey}`;
+  return `api:${baseKey}:${method}:${userId}${queryKey}`;
 }
 
 // Verificar se a rota deve ser cacheada

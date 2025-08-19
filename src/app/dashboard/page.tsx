@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  IconTrendingUp,
-  IconTrendingDown,
-  IconUsers,
-  IconPackage,
-  IconCreditCard,
-  IconFileText,
-  IconArrowRight,
-  IconPlus,
-  IconEye
-} from '@tabler/icons-react';
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Package,
+  CreditCard,
+  FileText,
+  ArrowRight,
+  Plus,
+  Eye
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -89,7 +89,7 @@ const DashboardPage = () => {
       value: loading ? '...' : stats.totalProducts.toString(),
       change: '+0',
       trend: 'up' as const,
-      icon: IconPackage,
+      icon: Package,
       color: 'text-blue-600'
     },
     {
@@ -97,7 +97,7 @@ const DashboardPage = () => {
       value: loading ? '...' : stats.totalMovements.toString(),
       change: '+0',
       trend: 'up' as const,
-      icon: IconFileText,
+      icon: FileText,
       color: 'text-green-600'
     },
     {
@@ -105,7 +105,7 @@ const DashboardPage = () => {
       value: loading ? '...' : stats.totalAccounts.toString(),
       change: '+0',
       trend: 'up' as const,
-      icon: IconCreditCard,
+      icon: CreditCard,
       color: 'text-purple-600'
     },
     {
@@ -113,7 +113,7 @@ const DashboardPage = () => {
       value: loading ? '...' : stats.pendingAccounts.toString(),
       change: '0',
       trend: 'down' as const,
-      icon: IconCreditCard,
+      icon: CreditCard,
       color: 'text-orange-600'
     }
   ];
@@ -152,28 +152,28 @@ const DashboardPage = () => {
       title: 'Nova Venda',
       description: 'Registrar uma nova venda',
       href: '/products',
-      icon: IconPlus,
+      icon: Plus,
       color: 'bg-green-500 hover:bg-green-600'
     },
     {
       title: 'Cadastrar Produto',
       description: 'Adicionar novo produto',
       href: '/products',
-      icon: IconPackage,
+      icon: Package,
       color: 'bg-blue-500 hover:bg-blue-600'
     },
     {
       title: 'Novo Cliente',
       description: 'Cadastrar novo cliente',
       href: '/clients',
-      icon: IconUsers,
+      icon: Users,
       color: 'bg-purple-500 hover:bg-purple-600'
     },
     {
       title: 'Ver Relatórios',
       description: 'Visualizar relatórios',
       href: '/movements',
-      icon: IconFileText,
+      icon: FileText,
       color: 'bg-orange-500 hover:bg-orange-600'
     }
   ];
@@ -203,7 +203,7 @@ const DashboardPage = () => {
         </div>
         <Button asChild>
           <Link href="/products">
-            <IconPlus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             Nova Venda
           </Link>
         </Button>
@@ -213,7 +213,7 @@ const DashboardPage = () => {
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat, index) => {
           const Icon = stat.icon;
-          const TrendIcon = stat.trend === 'up' ? IconTrendingUp : IconTrendingDown;
+          const TrendIcon = stat.trend === 'up' ? TrendingUp : TrendingDown;
           
           return (
             <Card key={index}>
@@ -269,7 +269,7 @@ const DashboardPage = () => {
                         {action.description}
                       </p>
                     </div>
-                    <IconArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </Link>
                 );
               })}
@@ -329,7 +329,7 @@ const DashboardPage = () => {
               <div className="mt-4">
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/movements">
-                    <IconEye className="mr-2 h-4 w-4" />
+                    <Eye className="mr-2 h-4 w-4" />
                     Ver Todas as Atividades
                   </Link>
                 </Button>
@@ -351,7 +351,7 @@ const DashboardPage = () => {
           <CardContent>
             <div className="flex h-48 items-center justify-center text-muted-foreground">
               <div className="text-center">
-                <IconFileText className="mx-auto h-10 w-10 mb-3" />
+                <FileText className="mx-auto h-10 w-10 mb-3" />
                 <p className="text-sm">Gráfico de vendas será implementado aqui</p>
               </div>
             </div>
@@ -368,7 +368,7 @@ const DashboardPage = () => {
           <CardContent>
             <div className="flex h-48 items-center justify-center text-muted-foreground">
               <div className="text-center">
-                <IconPackage className="mx-auto h-10 w-10 mb-3" />
+                <Package className="mx-auto h-10 w-10 mb-3" />
                 <p className="text-sm">Ranking de produtos será implementado aqui</p>
               </div>
             </div>

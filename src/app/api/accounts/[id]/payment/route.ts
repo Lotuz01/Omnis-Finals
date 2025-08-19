@@ -34,9 +34,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     // Verificar se a conta existe - usando PRIMARY KEY
     const [accountRows] = await dbPool.execute(
-      'SELECT id, status, amount, payment_amount, notes FROM accounts WHERE id = ? LIMIT 1',
+      'SELECT id, status, amount, payment_amount, payment_date, notes FROM accounts WHERE id = ? LIMIT 1',
       [accountId]
-    ) as [{ id: number; status: string; amount: number; payment_amount?: number; notes?: string }[], unknown];
+    ) as [{ id: number; status: string; amount: number; payment_amount?: number; payment_date?: string; notes?: string }[], unknown];
 
     if (accountRows.length === 0) {
       return NextResponse.json({ message: 'Account not found' }, { status: 404 });
@@ -51,8 +51,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
-    // Calcular valor já pago e valor restante
-    const currentPaid = parseFloat(String(account.payment_amount || '0'));
+    // Migração de pagamento existente se necessário
+    const [countRows] = await dbPool.execute(
+      'SELECT COUNT(*) as count FROM account_payments WHERE account_id = ?',
+      [accountId]
+    ) as [{count: number}[], unknown];
+
+    const paymentCount = countRows[0].count;
+
+    if (paymentCount === 0 && account.payment_amount && account.payment_amount > 0 && account.payment_date) {
+      await dbPool.execute(
+        'INSERT INTO account_payments (account_id, payment_amount, payment_date, notes) VALUES (?, ?, ?, ?)',
+        [accountId, account.payment_amount, account.payment_date, 'Migrated initial payment']
+      );
+    }
+
+    // Calcular total pago atual da tabela de pagamentos
+    const [sumRows] = await dbPool.execute(
+      'SELECT SUM(payment_amount) as total_paid FROM account_payments WHERE account_id = ?',
+      [accountId]
+    ) as [{total_paid: number | null}[], unknown];
+
+    const currentPaid = parseFloat(sumRows[0].total_paid?.toString() || '0');
     const totalAmount = parseFloat(String(account.amount));
     const newPaymentAmount = parseFloat(payment_amount);
     const totalPaid = currentPaid + newPaymentAmount;
@@ -68,10 +88,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
+    // Inserir o novo pagamento
+    await dbPool.execute(
+      'INSERT INTO account_payments (account_id, payment_amount, payment_date, notes) VALUES (?, ?, ?, ?)',
+      [accountId, newPaymentAmount, payment_date, notes || '']
+    );
+
     // Determinar o novo status
-    let newStatus = 'pendente';
+    let newStatus = account.status;
     if (totalPaid >= totalAmount) {
       newStatus = 'pago';
+    } else if (totalPaid > 0 && newStatus !== 'vencido') {
+      newStatus = 'parcialmente_pago';
     } else if (totalPaid > 0) {
       newStatus = 'parcialmente_pago';
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useNotify } from '@/contexts/notifications-context';
 
@@ -25,14 +25,14 @@ const ProductsPage = () => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotify();
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const res = await fetch('/api/products');
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const data = await res.json();
-      const productsWithParsedPrice = data.map((product: Product) => ({
+      const productsWithParsedPrice = data.products.map((product: Product) => ({
         ...product,
         price: parseFloat(product.price.toString()),
       }));
@@ -74,7 +74,7 @@ const ProductsPage = () => {
         'Não foi possível carregar a lista de produtos. Verifique sua conexão e tente novamente.'
       );
     }
-  };
+  }, [notifyError, notifyWarning, notifyInfo]);
 
   useEffect(() => {
     fetchProducts();
@@ -210,7 +210,7 @@ const ProductsPage = () => {
   return (
     <div className="p-3 sm:p-6">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 flex items-center">
-          <Image src="/stock-icon.png" alt="Ícone de Estoque" className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" width={32} height={32} />
+          <Image src="/stock-icon.png" alt="Ícone de Estoque" className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" width={32} height={32} loading="lazy" />
           Estoque
         </h1>
 

@@ -129,14 +129,14 @@ async function createPrinterTables() {
     
     // Verificar se já existem impressoras
     const [existingPrinters] = await connection.execute(
-      'SELECT COUNT(*) as count FROM printers WHERE user_id = 2'
+      'SELECT COUNT(*) as count FROM printers WHERE user_id = 1'
     );
     
     if (existingPrinters[0].count === 0) {
       // Inserir impressora térmica padrão
       await connection.execute(`
         INSERT INTO printers (user_id, name, type, connection_type, paper_width, characters_per_line, is_default, settings) 
-        VALUES (2, 'Impressora Térmica Padrão', 'termica', 'usb', 80, 48, TRUE, ?)
+        VALUES (1, 'Impressora Térmica Padrão', 'termica', 'usb', 80, 48, TRUE, ?)
       `, [JSON.stringify({
         cut_paper: true,
         open_drawer: false,
@@ -149,7 +149,7 @@ async function createPrinterTables() {
       // Inserir impressora laser
       await connection.execute(`
         INSERT INTO printers (user_id, name, type, connection_type, paper_width, characters_per_line, is_default, settings) 
-        VALUES (2, 'Impressora Laser A4', 'laser', 'rede', 210, 80, FALSE, ?)
+        VALUES (1, 'Impressora Laser A4', 'laser', 'rede', 210, 80, FALSE, ?)
       `, [JSON.stringify({
         print_logo: true,
         header_text: 'RELATÓRIO DO SISTEMA',
@@ -163,7 +163,7 @@ async function createPrinterTables() {
     
     // Verificar se já existem templates
     const [existingTemplates] = await connection.execute(
-      'SELECT COUNT(*) as count FROM print_templates WHERE user_id = 2'
+      'SELECT COUNT(*) as count FROM print_templates WHERE user_id = 1'
     );
     
     if (existingTemplates[0].count === 0) {
@@ -200,7 +200,7 @@ Obrigado pela preferencia!
       
       await connection.execute(`
         INSERT INTO print_templates (user_id, name, document_type, template_content, is_default) 
-        VALUES (2, 'Cupom Fiscal Padrão', 'cupom', ?, TRUE)
+        VALUES (1, 'Cupom Fiscal Padrão', 'cupom', ?, TRUE)
       `, [cupomTemplate]);
       
       // Inserir template de etiqueta
@@ -213,7 +213,7 @@ Preço: R$ {{product.price}}
       
       await connection.execute(`
         INSERT INTO print_templates (user_id, name, document_type, template_content, is_default) 
-        VALUES (2, 'Etiqueta de Produto', 'etiqueta', ?, TRUE)
+        VALUES (1, 'Etiqueta de Produto', 'etiqueta', ?, TRUE)
       `, [etiquetaTemplate]);
       
       console.log('✅ Templates padrão inseridos');

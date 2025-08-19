@@ -19,7 +19,7 @@ interface Client {
 }
 
 const ClientsPage = () => {
-  const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotify();
+  const { notifySuccess, notifyError, notifyInfo } = useNotify();
   const { confirm, ConfirmationComponent } = useConfirmation();
   const [clients, setClients] = useState<Client[]>([]);
   const [newClient, setNewClient] = useState({
@@ -35,7 +35,7 @@ const ClientsPage = () => {
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string>('');
+  
   const [loading, setLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
 
@@ -393,11 +393,7 @@ const ClientsPage = () => {
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">Gerenciamento de Clientes</h1>
           
-          {successMessage && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-              {successMessage}
-            </div>
-          )}
+          
           
           {formErrors.general && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

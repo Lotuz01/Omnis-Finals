@@ -34,8 +34,6 @@ async function verifyAdmin(authToken: string) {
 
 // GET - Listar backups disponíveis
 export async function GET() {
-  const startTime = Date.now();
-  
   try {
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;
@@ -60,7 +58,7 @@ export async function GET() {
       version: row.version
     }));
 
-    logger.info('Backup list retrieved', { count: backups.length, duration: Date.now() - startTime });
+    logger.info('Backup list retrieved', { count: backups.length });
     return NextResponse.json({ backups });
     
   } catch (error) {
@@ -71,8 +69,6 @@ export async function GET() {
 
 // POST - Criar novo backup
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
-  
   try {
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;

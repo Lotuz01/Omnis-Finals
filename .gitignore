@@ -20,6 +20,9 @@ venv/
 # Ignorar arquivos de configuração sensíveis
 *.env
 .env
+.env*
+.env.production
+.env.local
 
 # Ignorar arquivos de IDEs
 .idea/

@@ -5,20 +5,20 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import {
-  IconHome,
-  IconPackage,
-  IconUsers,
-  IconCreditCard,
-  IconFileText,
-  IconPrinter,
-  IconSettings,
-  IconLogout,
-  IconMenu2,
-  IconUser,
-  IconShield,
-  IconDatabase,
-  IconSearch
-} from '@tabler/icons-react';
+  Home,
+  Package,
+  Users,
+  CreditCard,
+  FileText,
+  Printer,
+  Settings,
+  LogOut,
+  Menu,
+  User,
+  Shield,
+  Database,
+  Search
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -66,49 +66,49 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
     {
       title: 'Dashboard',
       href: isAdmin ? '/' : '/dashboard',
-      icon: IconHome,
+      icon: Home,
       description: 'Visão geral do sistema'
     },
     {
       title: 'Produtos',
       href: '/products',
-      icon: IconPackage,
+      icon: Package,
       description: 'Gerenciar produtos'
     },
     {
       title: 'Clientes',
       href: '/clients',
-      icon: IconUsers,
+      icon: Users,
       description: 'Gerenciar clientes'
     },
     {
       title: 'Contas',
       href: '/accounts',
-      icon: IconCreditCard,
+      icon: CreditCard,
       description: 'Contas a pagar/receber'
     },
     {
       title: 'Movimentações',
       href: '/movements',
-      icon: IconFileText,
+      icon: FileText,
       description: 'Histórico de movimentações'
     },
     {
       title: 'NFe',
       href: '/nfe',
-      icon: IconFileText,
+      icon: FileText,
       description: 'Notas fiscais eletrônicas'
     },
     {
       title: 'Impressoras',
       href: '/printers',
-      icon: IconPrinter,
+      icon: Printer,
       description: 'Configurar impressoras'
     },
     {
       title: 'Certificado',
       href: '/certificado',
-      icon: IconShield,
+      icon: Shield,
       description: 'Certificado digital'
     }
   ];
@@ -117,13 +117,13 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
     {
       title: 'Usuários',
       href: '/users',
-      icon: IconUsers,
+      icon: Users,
       description: 'Gerenciar usuários'
     },
     {
       title: 'Backup',
       href: '/backup',
-      icon: IconDatabase,
+      icon: Database,
       description: 'Backup do sistema'
     }
   ];
@@ -141,6 +141,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
             width={120}
             height={40}
             className="h-8 w-auto"
+            loading="lazy"
           />
         </Link>
       </div>
@@ -206,7 +207,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
                   className="lg:hidden"
                   onClick={() => setIsMobileMenuOpen(true)}
                 >
-                  <IconMenu2 className="h-5 w-5" />
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
             </Sheet>
@@ -225,7 +226,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
           <div className="flex items-center space-x-4">
             {/* Search */}
             <div className="relative hidden md:block">
-              <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Buscar..."
                 value={searchQuery}
@@ -263,19 +264,19 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, userName, isAdmin
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center">
-                    <IconUser className="mr-2 h-4 w-4" />
+                    <User className="mr-2 h-4 w-4" />
                     Perfil
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" className="flex items-center">
-                    <IconSettings className="mr-2 h-4 w-4" />
+                    <Settings className="mr-2 h-4 w-4" />
                     Configurações
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <IconLogout className="mr-2 h-4 w-4" />
+                  <LogOut className="mr-2 h-4 w-4" />
                   Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>

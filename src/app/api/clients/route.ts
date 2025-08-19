@@ -3,8 +3,9 @@ import { dbPool } from '../../../utils/database-pool';
 import { cookies } from 'next/headers';
 import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
+import { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;
@@ -36,8 +37,13 @@ export async function GET() {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
     const [rows] = await dbPool.execute(
-      'SELECT id, company_name as name, cnpj, email, phone, address, city, state, zip_code, contact_person, created_at, updated_at FROM clients ORDER BY company_name ASC'
+      'SELECT id, company_name as name, cnpj, email, phone, address, city, state, zip_code, contact_person, created_at, updated_at FROM clients ORDER BY company_name ASC LIMIT ? OFFSET ?',
+      [limit.toString(), offset.toString()]
     );
     
     await cache.set(cacheKey, rows, CACHE_TTL.MEDIUM);
@@ -48,6 +54,14 @@ export async function GET() {
         'Cache-Control': 'public, max-age=300'
       }
     });
+    const [countRows] = await dbPool.execute('SELECT COUNT(*) as total FROM clients');
+    const total = countRows[0].total;
+    const responseData = {
+      clients: rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+    await cache.set(cacheKey, responseData, CACHE_TTL.MEDIUM);
+    return NextResponse.json(responseData, { headers: { 'X-Cache': 'MISS', 'Cache-Control': 'public, max-age=300' } });
   } catch (error) {
     console.error('Error fetching clients:', error);
     return NextResponse.json({ message: 'Error fetching clients', error: (error as Error).message }, { status: 500 });

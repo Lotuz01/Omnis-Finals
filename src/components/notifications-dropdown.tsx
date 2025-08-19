@@ -4,14 +4,14 @@ import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  IconBell,
-  IconCheck,
-  IconTrash,
-  IconAlertCircle,
-  IconInfoCircle,
-  IconCircleCheck,
-  IconExclamationCircle
-} from '@tabler/icons-react';
+  Bell,
+  Check,
+  Trash,
+  AlertTriangle,
+  Info,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 // import { ScrollArea } from '@/components/ui/scroll-area';
@@ -28,14 +28,14 @@ import { cn } from '@/lib/utils';
 const getNotificationIcon = (type: Notification['type']) => {
   switch (type) {
     case 'success':
-      return <IconCircleCheck className="h-4 w-4 text-green-500" />;
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
     case 'error':
-      return <IconExclamationCircle className="h-4 w-4 text-red-500" />;
+      return <XCircle className="h-4 w-4 text-red-500" />;
     case 'warning':
-      return <IconAlertCircle className="h-4 w-4 text-yellow-500" />;
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
     case 'info':
     default:
-      return <IconInfoCircle className="h-4 w-4 text-blue-500" />;
+      return <Info className="h-4 w-4 text-blue-500" />;
   }
 };
 
@@ -74,7 +74,7 @@ const NotificationItem: React.FC<{
                   onClick={() => onMarkAsRead(notification.id)}
                   title="Marcar como lida"
                 >
-                  <IconCheck className="h-3 w-3" />
+                  <Check className="h-3 w-3" />
                 </Button>
               )}
               
@@ -85,7 +85,7 @@ const NotificationItem: React.FC<{
                 onClick={() => onRemove(notification.id)}
                 title="Remover notificação"
               >
-                <IconTrash className="h-3 w-3" />
+                <Trash className="h-3 w-3" />
               </Button>
             </div>
           </div>
@@ -133,7 +133,7 @@ export const NotificationsDropdown: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <IconBell className="h-5 w-5" />
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs">
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -181,7 +181,7 @@ export const NotificationsDropdown: React.FC = () => {
         
         {notifications.length === 0 ? (
           <div className="p-8 text-center">
-            <IconBell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Nenhuma notificação</p>
             <p className="text-xs text-muted-foreground mt-1">
               Você está em dia com tudo!

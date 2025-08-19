@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dbPool, withTransaction } from '../../../utils/database-pool';
 import { cookies } from 'next/headers';
 import { logger } from '../../../utils/logger';
-import { validator, schemas } from '../../../utils/validation';
+
 import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
 
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
     let requestData;
     try {
       requestData = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
     }
     

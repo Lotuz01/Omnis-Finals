@@ -31,6 +31,14 @@ interface LinkedProduct {
   price: number;
 }
 
+interface Payment {
+  id: number;
+  payment_amount: number;
+  payment_date: string;
+  notes: string;
+  created_at: string;
+}
+
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
@@ -44,6 +52,7 @@ export default function AccountsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [linkedProducts, setLinkedProducts] = useState<LinkedProduct[]>([]);
   const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
 
   const [formData, setFormData] = useState({
     type: 'pagar' as 'pagar' | 'receber',
@@ -75,7 +84,7 @@ export default function AccountsPage() {
       const response = await fetch('/api/products');
       if (response.ok) {
         const data = await response.json();
-        setAvailableProducts(data);
+      setAvailableProducts(data.products || []);
       }
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
@@ -97,23 +106,6 @@ export default function AccountsPage() {
     setLinkedProducts(linkedProducts.filter((_, i) => i !== index));
   };
 
-  const fetchAccounts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/accounts');
-      if (response.ok) {
-        const data = await response.json();
-        setAccounts(data);
-      } else {
-        setError('Erro ao carregar contas');
-      }
-    } catch {
-      setError('Erro ao conectar com o servidor');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const applyFilters = useCallback(() => {
     let filtered = accounts;
 
@@ -127,6 +119,23 @@ export default function AccountsPage() {
 
     setFilteredAccounts(filtered);
   }, [accounts, filterType, filterStatus]);
+  
+  const fetchAccounts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/accounts');
+      if (response.ok) {
+        const data = await response.json();
+      setAccounts(data.accounts || []);
+    } else {
+      setError('Erro ao carregar contas');
+      }
+    } catch {
+      setError('Erro ao conectar com o servidor');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,13 +217,22 @@ export default function AccountsPage() {
     }
   };
 
-  const openPaymentModal = (account: Account) => {
+  const openPaymentModal = async (account: Account) => {
     setSelectedAccount(account);
+    try {
+      const response = await fetch(`/api/accounts/${account.id}/payments`);
+      if (response.ok) {
+        const data = await response.json();
+        setPaymentHistory(data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar histórico de pagamentos:', error);
+    }
     const remainingAmount = account.payment_amount ? Number(account.amount) - Number(account.payment_amount) : Number(account.amount);
     setPaymentData({
-      payment_amount: remainingAmount.toFixed(2),
+      payment_amount: '',
       payment_date: new Date().toISOString().split('T')[0],
-      notes: account.notes || ''
+      notes: ''
     });
     setShowPaymentModal(true);
   };
@@ -560,8 +578,24 @@ export default function AccountsPage() {
             <h3 className="text-lg font-bold text-gray-900 mb-4">Registrar Pagamento</h3>
             <div className="mb-4 p-3 bg-gray-50 rounded-md">
               <p className="text-sm text-gray-600 mb-1">Conta: <span className="font-medium">{selectedAccount.description}</span></p>
-              <p className="text-sm text-gray-600">Valor Total: <span className="font-medium">{formatCurrency(selectedAccount.amount)}</span></p>
+              <p className="text-sm text-gray-600 mb-1">Valor Total: <span className="font-medium">{formatCurrency(selectedAccount.amount)}</span></p>
+              <p className="text-sm text-gray-600 mb-1">Valor Pago: <span className="font-medium">{formatCurrency(selectedAccount.payment_amount || 0)}</span></p>
+              <p className="text-sm text-gray-600">Valor Restante: <span className="font-medium">{formatCurrency(selectedAccount.amount - (selectedAccount.payment_amount || 0))}</span></p>
             </div>
+            {paymentHistory.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Histórico de Pagamentos</h4>
+                <div className="max-h-40 overflow-y-auto">
+                  {paymentHistory.map((payment) => (
+                    <div key={payment.id} className="border-b py-2 text-sm">
+                      <p>Data: {new Date(payment.payment_date).toLocaleDateString('pt-BR')}</p>
+                      <p>Valor: {formatCurrency(payment.payment_amount)}</p>
+                      <p>Observações: {payment.notes || 'Nenhuma'}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <form onSubmit={handlePayment}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Valor do Pagamento *</label>
@@ -573,6 +607,7 @@ export default function AccountsPage() {
                   onChange={(e) => setPaymentData({ ...paymentData, payment_amount: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                   required
+                  max={(selectedAccount.amount - (selectedAccount.payment_amount || 0)).toFixed(2)}
                 />
               </div>
               <div className="mb-4">

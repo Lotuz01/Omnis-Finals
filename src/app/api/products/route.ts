@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { connectToDatabase } from '../../../database';
 import { cookies } from 'next/headers';
 import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   let connection;
   try {
     const cookieStore = await cookies();
@@ -43,22 +43,31 @@ export async function GET() {
     }
 
     const userId = userRows[0].id;
+    console.log(`UserID: ${userId}, Type: ${typeof userId}`);
+
+    const searchParams = request.nextUrl.searchParams;
+    let page = parseInt(searchParams.get('page') || '1');
+    let limit = parseInt(searchParams.get('limit') || '20');
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1 || limit > 100) limit = 20;
+    const offset = (page - 1) * limit;
+    console.log(`Page: ${page}, Limit: ${limit}, Offset: ${offset}, Types: ${typeof page}, ${typeof limit}, ${typeof offset}`);
     
     // Query otimizada com índices e ordenação - usando índice idx_products_user_updated
     const [rows] = await connection.execute(
-      'SELECT id, name, description, price, stock_quantity, created_at, updated_at FROM products WHERE user_id = ? ORDER BY updated_at DESC',
-      [userId]
+      'SELECT id, name, description, price, stock_quantity, created_at, updated_at FROM products WHERE user_id = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?',
+      [userId, String(limit), String(offset)]
     ) as [unknown[], unknown];
     
     // Cachear resultado por 5 minutos
-    await cache.set(cacheKey, rows, CACHE_TTL.MEDIUM);
-    
-    return NextResponse.json(rows, {
-      headers: {
-        'X-Cache': 'MISS',
-        'Cache-Control': 'public, max-age=300'
-      }
-    });
+    const [countRows] = await connection.execute('SELECT COUNT(*) as total FROM products WHERE user_id = ?', [userId]) as [Array<{ total: number }>, unknown];
+    const total = countRows[0].total;
+    const responseData = {
+      products: rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+    await cache.set(cacheKey, responseData, CACHE_TTL.MEDIUM);
+    return NextResponse.json(responseData, { headers: { 'X-Cache': 'MISS', 'Cache-Control': 'public, max-age=300' } });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json({ message: 'Error fetching products', error: (error as Error).message }, { status: 500 });
@@ -80,7 +89,7 @@ export async function POST(request: Request) {
     // Extrair username do token (remover timestamp se presente)
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
 
-    const { name, description, price, stock_quantity, category } = await request.json();
+    const { name, description, price, stock_quantity } = await request.json();
 
     // Validações otimizadas
     if (!name?.trim()) {
@@ -113,7 +122,6 @@ export async function POST(request: Request) {
       [name.trim(), userId]
     ) as [{ id: number; stock_quantity: number; name: string; description: string; price: number }[], unknown];
     
-    let result;
     let responseData;
     
     if (existingProduct.length > 0) {

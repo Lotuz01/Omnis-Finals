@@ -295,7 +295,7 @@ export default function NFEPage() {
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
-            <Image src="/nfe-icon.svg" alt="Ícone NFe" width={24} height={24} className="mr-2" onError={(e) => {
+            <Image src="/nfe-icon.svg" alt="Ícone NFe" width={24} height={24} className="mr-2" loading="lazy" onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }} />
             Nota Fiscal Eletrônica
