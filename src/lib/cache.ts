@@ -1,20 +1,23 @@
 // Cache em memória
-import mysql, { RowDataPacket } from 'mysql2/promise';
+import { createPool } from 'mysql2/promise';
 
 // Configuração do banco de dados (reutilizando dbConfig de outros arquivos, assumindo que está disponível)
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'wendel',
-  password: process.env.DB_PASSWORD || 'Gengar1509@',
-  database: process.env.DB_NAME || 'pdv_system',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 };
 
 class MySQLCache {
-  private pool: mysql.Pool;
+  private pool;
   private cleanupInterval: NodeJS.Timeout;
 
   constructor() {
-    this.pool = mysql.createPool(dbConfig);
+    this.pool = createPool(dbConfig);
     this.initializeTable();
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
@@ -24,7 +27,7 @@ class MySQLCache {
   private async initializeTable() {
     const connection = await this.pool.getConnection();
     try {
-      await connection.execute(
+      await connection.query(
         'CREATE TABLE IF NOT EXISTS cache (' +
         'cache_key VARCHAR(255) PRIMARY KEY, ' +
         'value TEXT, ' +
@@ -39,7 +42,7 @@ class MySQLCache {
     const expiry = Date.now() + (ttlSeconds * 1000);
     const connection = await this.pool.getConnection();
     try {
-      await connection.execute(
+      await connection.query(
         'INSERT INTO cache (cache_key, value, expiry) VALUES (?, ?, ?) ' +
         'ON DUPLICATE KEY UPDATE value = ?, expiry = ?',
         [key, JSON.stringify(value), expiry, JSON.stringify(value), expiry]
@@ -52,10 +55,9 @@ class MySQLCache {
   async get(key: string): Promise<any | null> {
     const connection = await this.pool.getConnection();
     try {
-      const [rows] = await connection.execute('SELECT value, expiry FROM cache WHERE cache_key = ?', [key]);
-      const typedRows = rows as RowDataPacket[];
-      if (typedRows.length === 0) return null;
-      const { value, expiry } = typedRows[0] as { value: string; expiry: number };
+      const [rows] = await connection.query('SELECT value, expiry FROM cache WHERE cache_key = ?', [key]);
+      if (rows.length === 0) return null;
+      const { value, expiry } = rows[0];
       if (Date.now() > expiry) {
         await this.del(key);
         return null;
@@ -70,8 +72,8 @@ class MySQLCache {
     const connection = await this.pool.getConnection();
     try {
       const likePattern = pattern.replace(/\*/g, '%');
-      const [rows] = await connection.execute('SELECT cache_key FROM cache WHERE cache_key LIKE ?', [likePattern]);
-      return (rows as RowDataPacket[]).map(row => row.cache_key as string);
+      const [rows] = await connection.query('SELECT cache_key FROM cache WHERE cache_key LIKE ?', [likePattern]);
+      return rows.map(row => row.cache_key);
     } finally {
       connection.release();
     }
@@ -80,9 +82,8 @@ class MySQLCache {
   async getSize(): Promise<number> {
     const connection = await this.pool.getConnection();
     try {
-      const [rows] = await connection.execute('SELECT COUNT(*) as count FROM cache');
-      const typedRows = rows as RowDataPacket[];
-      return (typedRows[0] as { count: number }).count;
+      const [rows] = await connection.query('SELECT COUNT(*) as count FROM cache');
+      return parseInt(rows[0].count);
     } finally {
       connection.release();
     }
@@ -91,10 +92,9 @@ class MySQLCache {
   async ttl(key: string): Promise<number> {
     const connection = await this.pool.getConnection();
     try {
-      const [rows] = await connection.execute('SELECT expiry FROM cache WHERE cache_key = ?', [key]);
-      const typedRows = rows as RowDataPacket[];
-      if (typedRows.length === 0) return -2;
-      const { expiry } = typedRows[0] as { expiry: number };
+      const [rows] = await connection.query('SELECT expiry FROM cache WHERE cache_key = ?', [key]);
+      if (rows.length === 0) return -2;
+      const { expiry } = rows[0];
       const remaining = Math.floor((expiry - Date.now()) / 1000);
       return remaining > 0 ? remaining : -1;
     } finally {
@@ -105,7 +105,7 @@ class MySQLCache {
   async del(key: string): Promise<void> {
     const connection = await this.pool.getConnection();
     try {
-      await connection.execute('DELETE FROM cache WHERE cache_key = ?', [key]);
+      await connection.query('DELETE FROM cache WHERE cache_key = ?', [key]);
     } finally {
       connection.release();
     }
@@ -114,7 +114,7 @@ class MySQLCache {
   private async cleanup(): Promise<void> {
     const connection = await this.pool.getConnection();
     try {
-      await connection.execute('DELETE FROM cache WHERE expiry < ?', [Date.now()]);
+      await connection.query('DELETE FROM cache WHERE expiry < ?', [Date.now()]);
     } finally {
       connection.release();
     }
@@ -123,7 +123,7 @@ class MySQLCache {
   async clear(): Promise<void> {
     const connection = await this.pool.getConnection();
     try {
-      await connection.execute('TRUNCATE TABLE cache');
+      await connection.query('TRUNCATE TABLE cache');
     } finally {
       connection.release();
     }
@@ -181,7 +181,7 @@ export class CacheService {
   // Definir cache com TTL
   public async set(key: string, value: any, ttl: number = 300): Promise<boolean> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return false;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return false;
       await this.cache.set(key, value, ttl);
       return true;
     } catch (error) {
@@ -193,7 +193,7 @@ export class CacheService {
   // Obter do cache
   public async get<T>(key: string): Promise<T | null> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return null;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return null;
       return await this.cache.get(key) as T;
     } catch (error) {
       console.error('[CACHE] Error getting cache:', error);
@@ -204,7 +204,7 @@ export class CacheService {
   // Deletar do cache
   public async del(key: string): Promise<boolean> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return false;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return false;
       await this.cache.del(key);
       return true;
     } catch (error) {
@@ -216,7 +216,7 @@ export class CacheService {
   // Deletar múltiplas chaves
   public async delPattern(pattern: string): Promise<boolean> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return false;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return false;
       const keys = await this.cache.keys(pattern);
       for (const key of keys) {
         await this.cache.del(key);
@@ -231,7 +231,7 @@ export class CacheService {
   // Verificar se existe
   public async exists(key: string): Promise<boolean> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return false;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return false;
       return await this.cache.get(key) !== null;
     } catch (error) {
       console.error('[CACHE] Error checking cache existence:', error);
@@ -242,7 +242,7 @@ export class CacheService {
   // Incrementar contador
   public async incr(key: string, ttl: number = 300): Promise<number> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return 0;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return 0;
       const current = await this.cache.get(key) || 0;
       const newValue = typeof current === 'number' ? current + 1 : 1;
       await this.cache.set(key, newValue, ttl);
@@ -256,7 +256,7 @@ export class CacheService {
   // Obter TTL
   public async ttl(key: string): Promise<number> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return -1;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return -1;
       return await this.cache.ttl(key);
     } catch (error) {
       console.error('[CACHE] Error getting TTL:', error);
@@ -267,7 +267,7 @@ export class CacheService {
   // Limpar todo o cache
   public async flush(): Promise<boolean> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return false;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return false;
       await this.cache.clear();
       return true;
     } catch (error) {
@@ -278,10 +278,10 @@ export class CacheService {
 
   public async getStats(): Promise<any> {
     try {
-      if (!this.cache || !this.isMySQLCache(this.cache)) return null;
+      if (!this.cache || !this.isPostgreSQLCache(this.cache)) return null;
       const size = await this.cache.getSize();
       return {
-        memory: 'MySQL cache',
+        memory: 'PostgreSQL cache',
         keyspace: `keys=${size}`,
         connected: true
       };

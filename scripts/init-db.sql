@@ -3,11 +3,6 @@
 CREATE DATABASE IF NOT EXISTS sistema_gestao;
 USE sistema_gestao;
 
--- Criação de usuários
-CREATE USER IF NOT EXISTS 'app_user'@'%' IDENTIFIED BY 'app_password';
-GRANT ALL PRIVILEGES ON sistema_gestao.* TO 'app_user'@'%';
-FLUSH PRIVILEGES;
-
 -- Tabela de usuários
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -67,8 +62,6 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 -- Inserir usuário administrador padrão
-INSERT IGNORE INTO users (username, password, name, is_admin) 
-VALUES ('admin', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', TRUE);
-
--- Aplicar privilégios
-FLUSH PRIVILEGES;
+INSERT INTO users (username, password, name, is_admin) 
+SELECT 'admin', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', TRUE
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'admin');

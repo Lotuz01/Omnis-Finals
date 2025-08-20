@@ -3,7 +3,7 @@ import "./globals.css";
 import AppWrapper from './AppWrapper';
 
 export const metadata: Metadata = {
-  title: "Criar Próximo Aplicativo",
+  title: "Sistema OMNIS",
   description: "Gerado por criar próximo aplicativo",
 };
 
