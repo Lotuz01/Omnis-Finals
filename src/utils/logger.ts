@@ -1,5 +1,5 @@
 // Sistema de logging avançado para produção
-import { connectToDatabase } from '../utils/database-pool';
+import * as db from '../database.js';
 
 export enum LogLevel {
   ERROR = 0,
@@ -105,11 +105,14 @@ class Logger {
   }
 
   private async writeToDatabase(entry: LogEntry) {
-    const connection = await connectToDatabase();
+    if (!db.connection()) {
+      await db.connectToDatabase();
+    }
+    const connection = await db.connection().getConnection();
     try {
       await connection.execute(
         `INSERT INTO logs (level, message, data, stack, request_id, user_id, ip, user_agent, operation, duration)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
         [
           entry.level,
           entry.message,

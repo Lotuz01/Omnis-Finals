@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbPool, withTransaction } from '../../../utils/database-pool';
+import * as db from '../../../database.js';
 import { cookies } from 'next/headers';
 import { logger } from '../../../utils/logger';
 
@@ -49,13 +49,13 @@ export async function GET(request: NextRequest) {
       if (typeof param === 'string') {
         for (const pattern of sqlInjectionPatterns) {
           if (pattern.test(param)) {
-          logger.warn('Tentativa de SQL injection detectada', {
-            ip: request.headers.get('x-forwarded-for') || 'unknown',
-            userAgent: request.headers.get('user-agent'),
-            payload: param,
-            url: request.url
-          });
-          return NextResponse.json({ error: 'Parâmetros inválidos detectados' }, { status: 400 });
+            logger.warn('Tentativa de SQL injection detectada', {
+              ip: request.headers.get('x-forwarded-for') || 'unknown',
+              userAgent: request.headers.get('user-agent'),
+              payload: param,
+              url: request.url
+            });
+            return NextResponse.json({ error: 'Parâmetros inválidos detectados' }, { status: 400 });
           }
         }
       }
@@ -197,10 +197,10 @@ export async function GET(request: NextRequest) {
     const countParams = [...queryParams];
     const mainParams = [...queryParams, String(limit), String(offset)];
     
-    const [countResult] = await dbPool.execute(countQuery, countParams);
-    const total = (countResult as { total: number }[])[0].total;
+    const countResult = await db.executeQuery(countQuery, countParams);
+    const total = countResult[0].total;
     
-    const [rows] = await dbPool.execute(mainQuery, mainParams);
+    const rows = await db.executeQuery(mainQuery, mainParams);
     
     const totalPages = Math.ceil(total / limit);
     
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
     await cache.set(cacheKey, responseData, CACHE_TTL.SHORT);
     
     logger.info('Movimentações buscadas com sucesso', {
-      count: (rows as unknown[]).length,
+      count: rows.length,
       total,
       page,
       totalPages,
@@ -290,7 +290,11 @@ export async function POST(request: NextRequest) {
     // Sanitizar reason se fornecido
     const sanitizedReason = reason ? reason.trim().substring(0, 500) : null;
 
-    const result = await withTransaction(async (connection) => {
+    const connection = await db.connection().getConnection();
+    let result;
+    try {
+      await connection.beginTransaction();
+
       // Verificar se o produto existe e obter estoque atual - query otimizada
       const [productRows] = await connection.execute(
         'SELECT id, name, stock_quantity as stock FROM products WHERE id = ? LIMIT 1',
@@ -329,7 +333,9 @@ export async function POST(request: NextRequest) {
       // Verificação de estoque baixo removida (coluna min_stock não existe)
       const isLowStock = false;
 
-      return {
+      await connection.commit();
+
+      result = {
         movementId: (movementResult as { insertId: number }).insertId,
         newStock,
         isLowStock,
@@ -338,7 +344,12 @@ export async function POST(request: NextRequest) {
           name: product.name
         }
       };
-    });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
 
     // Invalidar cache de movimentações após criação
     const cachePattern = `${CACHE_KEYS.MOVEMENTS}:${user.id}:*`;
@@ -373,7 +384,6 @@ export async function POST(request: NextRequest) {
         isLowStock: true
       })
     }, { status: 201 });
-    
   } catch (error) {
     const errorMessage = (error as Error).message;
     

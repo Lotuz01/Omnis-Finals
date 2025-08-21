@@ -1,6 +1,4 @@
-const https = require('https');
 const http = require('http');
-const { URL } = require('url');
 
 async function testLoginCookies() {
   try {
@@ -55,7 +53,7 @@ async function testLoginCookies() {
     try {
       const jsonData = JSON.parse(response.data);
       console.log('Dados JSON:', JSON.stringify(jsonData, null, 2));
-    } catch (e) {
+    } catch {
       console.log('Resposta não é JSON válido:');
       console.log(response.data.substring(0, 200));
     }
@@ -111,12 +109,12 @@ async function testLoginCookies() {
       
       if (movementsResponse.statusCode === 200) {
         try {
-          const movementsData = JSON.parse(movementsResponse.data);
-          console.log('✅ API movements funcionando! Dados recebidos:', Object.keys(movementsData));
-        } catch (e) {
-          console.log('❌ API movements retornou dados não-JSON:');
-          console.log(movementsResponse.data.substring(0, 200));
-        }
+            const movementsData = JSON.parse(movementsResponse.data);
+            console.log('✅ API movements funcionando! Dados recebidos:', Object.keys(movementsData));
+          } catch {
+            console.log('❌ API movements retornou dados não-JSON:');
+            console.log(movementsResponse.data.substring(0, 200));
+          }
       } else {
         console.log('❌ API movements falhou com status:', movementsResponse.statusCode);
         console.log('Resposta:', movementsResponse.data.substring(0, 200));

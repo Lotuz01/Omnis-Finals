@@ -1,4 +1,4 @@
-import { dbPool } from '../../../utils/database-pool';
+import { executeQuery } from '../../../database.js';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
 
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     // Check if user already exists
-    const [existingUsers]: unknown[] = await dbPool.execute(
+    const [existingUsers] = await executeQuery(
       'SELECT * FROM users WHERE username = ?', [username]
     );
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10); // Hash password with salt rounds = 10
 
-    await dbPool.execute(
+    await executeQuery(
       'INSERT INTO users (username, password, name, is_admin) VALUES (?, ?, ?, ?)',
       [username, hashedPassword, name, isAdmin || false]
     );

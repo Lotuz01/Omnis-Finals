@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbPool } from '@/utils/database-pool';
+import { executeQuery } from '../../../../../database.js';
 import { cookies } from 'next/headers';
 import { cache, CACHE_KEYS } from '../../../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../../../middleware/cache';
@@ -33,10 +33,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     // Verificar se a conta existe - usando PRIMARY KEY
-    const [accountRows] = await dbPool.execute(
+    const [accountRows] = await executeQuery(
       'SELECT id, status, amount, payment_amount, payment_date, notes FROM accounts WHERE id = ? LIMIT 1',
       [accountId]
-    ) as [{ id: number; status: string; amount: number; payment_amount?: number; payment_date?: string; notes?: string }[], unknown];
+    );
 
     if (accountRows.length === 0) {
       return NextResponse.json({ message: 'Account not found' }, { status: 404 });
@@ -52,25 +52,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     // Migração de pagamento existente se necessário
-    const [countRows] = await dbPool.execute(
+    const [countRows] = await executeQuery(
       'SELECT COUNT(*) as count FROM account_payments WHERE account_id = ?',
       [accountId]
-    ) as [{count: number}[], unknown];
+    );
 
     const paymentCount = countRows[0].count;
 
     if (paymentCount === 0 && account.payment_amount && account.payment_amount > 0 && account.payment_date) {
-      await dbPool.execute(
+      await executeQuery(
         'INSERT INTO account_payments (account_id, payment_amount, payment_date, notes) VALUES (?, ?, ?, ?)',
         [accountId, account.payment_amount, account.payment_date, 'Migrated initial payment']
       );
     }
 
     // Calcular total pago atual da tabela de pagamentos
-    const [sumRows] = await dbPool.execute(
+    const [sumRows] = await executeQuery(
       'SELECT SUM(payment_amount) as total_paid FROM account_payments WHERE account_id = ?',
       [accountId]
-    ) as [{total_paid: number | null}[], unknown];
+    );
 
     const currentPaid = parseFloat(sumRows[0].total_paid?.toString() || '0');
     const totalAmount = parseFloat(String(account.amount));
@@ -89,7 +89,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     // Inserir o novo pagamento
-    await dbPool.execute(
+    await executeQuery(
       'INSERT INTO account_payments (account_id, payment_amount, payment_date, notes) VALUES (?, ?, ?, ?)',
       [accountId, newPaymentAmount, payment_date, notes || '']
     );
@@ -105,7 +105,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     // Atualizar a conta com o pagamento - usando PRIMARY KEY
-    await dbPool.execute(
+    await executeQuery(
       `UPDATE accounts 
        SET status = ?, payment_date = ?, payment_amount = ?, notes = ?, updated_at = NOW()
        WHERE id = ?`,

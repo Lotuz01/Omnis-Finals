@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { dbPool } from '../../../utils/database-pool';
+import { executeQuery } from '../../../database.js';
 
 export async function GET() {
   try {
@@ -14,9 +14,9 @@ export async function GET() {
     // Extrair username do token (remover timestamp se presente)
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
 
-    const [rows] = await dbPool.execute(
+    const rows = await executeQuery(
       'SELECT id, username, name, is_admin FROM users WHERE username = ?', [username]
-    ) as [{ id: number; username: string; name: string; is_admin: boolean }[], unknown];
+    );
 
     if (rows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

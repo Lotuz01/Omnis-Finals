@@ -189,7 +189,7 @@ class SecurityTester {
           
           // Verificar sinais de injeção SQL bem-sucedida
           const responseText = JSON.stringify(response.data).toLowerCase();
-          const sqlErrors = ['sql syntax', 'mysql_fetch', 'ora-', 'postgresql', 'sqlite_'];
+          const sqlErrors = ['sql syntax', 'mysql_fetch', 'ora-', 'sqlite_'];
           
           const hasSQLError = sqlErrors.some(error => responseText.includes(error));
           

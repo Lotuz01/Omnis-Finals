@@ -34,7 +34,8 @@ interface NFEResponse {
 }
 
 // Função para emitir NFe via API externa (exemplo com Focus NFe)
-async function emitNFE(nfeData: NFEData, clientData: { name: string; email?: string; phone?: string; address?: string; }): Promise<NFEResponse> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function emitNFE(_nfeData: NFEData, _clientData: { name: string; email?: string; phone?: string; address?: string; }): Promise<NFEResponse> {
   console.log('[NFe API] Modo de teste ativado - simulando emissão de NFe');
   
   // Simular delay de rede

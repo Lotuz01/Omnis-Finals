@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { dbPool } from '@/utils/database-pool';
+import { executeQuery } from '../../../database.js';
 import { cookies } from 'next/headers';
 import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status'); // 'pendente', 'pago', 'vencido'
     
     // Buscar o usuário pelo username - usando índice idx_users_username
-    const [userRows] = await dbPool.execute(
+    const [userRows] = await executeQuery(
       'SELECT id FROM users WHERE username = ? LIMIT 1',
       [username]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (userRows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -70,11 +70,11 @@ export async function GET(request: NextRequest) {
     // Modify query to add LIMIT and OFFSET
     query += ' ORDER BY a.due_date ASC LIMIT ? OFFSET ?';
     params.push(limit.toString(), offset.toString());
-    const [rows] = await dbPool.execute(query, params) as [unknown[], unknown];
+    const rows = await executeQuery(query, params);
     
     // Atualizar status para vencido se necessário - usando índice idx_accounts_status_due_date
     const today = new Date().toISOString().split('T')[0];
-    await dbPool.execute(
+    await executeQuery(
       "UPDATE accounts SET status = 'vencido', updated_at = NOW() WHERE due_date < ? AND status = 'pendente' AND user_id = ?",
       [today, userId]
     );
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     // Cache do resultado por 5 minutos
     // Contagem total
     const countQuery = query.replace('SELECT a.*, u.name as user_name', 'SELECT COUNT(*) as total').replace('LIMIT ? OFFSET ?', '');
-    const [countRows] = await dbPool.execute(countQuery, params.slice(0, -2)) as [Array<{ total: number }>, unknown];
+    const [countRows] = await executeQuery(countQuery, params.slice(0, -2));
     const total = countRows[0].total;
     const responseData = {
       accounts: rows,
@@ -145,10 +145,10 @@ export async function POST(request: Request) {
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
     
     // Buscar o usuário pelo username - usando índice idx_users_username
-    const [userRows] = await dbPool.execute(
+    const [userRows] = await executeQuery(
       'SELECT id FROM users WHERE username = ? LIMIT 1',
       [username]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (userRows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -157,17 +157,17 @@ export async function POST(request: Request) {
     const userId = userRows[0].id;
 
     // Inserir a conta - query otimizada com campos reordenados
-    const [result] = await dbPool.execute(
+    const [result] = await executeQuery(
       `INSERT INTO accounts 
        (user_id, type, description, amount, due_date, category, supplier_customer, notes, created_at, updated_at) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [userId, type, description, amount, due_date, category || null, supplier_customer || null, notes || null]
-    ) as [{ insertId: number }, unknown];
+    );
 
     // Vincular produtos à conta
     if (products && Array.isArray(products)) {
       for (const item of products) {
-        await dbPool.execute(
+        await executeQuery(
           'INSERT INTO account_products (account_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
           [result.insertId, item.product_id, item.quantity, item.price]
         );

@@ -55,7 +55,7 @@ async function testLocalConnection() {
     
     // Teste básico
     log('\n🔍 Executando teste básico...', 'blue');
-    const [rows] = await connection.query('SELECT 1 as test');
+    await connection.query('SELECT 1 as test');
     log(`✅ Teste básico executado com sucesso!`, 'green');
     
     // Verificar versão do MySQL
@@ -84,7 +84,7 @@ async function testLocalConnection() {
       users.forEach(user => {
         log(`  - ${user.username} (${user.name}) ${user.is_admin ? '[ADMIN]' : ''}`, 'green');
       });
-    } catch (error) {
+    } catch {
       log('⚠️  Tabela users não encontrada ou erro ao consultar', 'yellow');
     }
     

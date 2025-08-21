@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbPool } from '../../../utils/database-pool';
+import { executeQuery } from '../../../database.js';
 import fs from 'fs';
 import os from 'os';
 
@@ -31,7 +31,7 @@ interface HealthCheck {
 async function checkDatabase(): Promise<HealthCheck['checks']['database']> {
   const start = Date.now();
   try {
-    await dbPool.execute('SELECT 1');
+    await executeQuery('SELECT 1');
     
     const responseTime = Date.now() - start;
     return {

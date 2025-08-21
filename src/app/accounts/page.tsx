@@ -228,7 +228,6 @@ export default function AccountsPage() {
     } catch (error) {
       console.error('Erro ao carregar histórico de pagamentos:', error);
     }
-    const remainingAmount = account.payment_amount ? Number(account.amount) - Number(account.payment_amount) : Number(account.amount);
     setPaymentData({
       payment_amount: '',
       payment_date: new Date().toISOString().split('T')[0],

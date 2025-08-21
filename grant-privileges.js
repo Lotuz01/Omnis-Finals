@@ -6,13 +6,13 @@ async function grantPrivileges() {
   let connection;
   try {
     const baseConfig = {
-      host: 'localhost',
+      host: '26.21.31.61',
       user: 'root',
       password: ''
     };
     connection = await mysql.createConnection(baseConfig);
-    await connection.query("CREATE USER IF NOT EXISTS 'omnis'@'localhost' IDENTIFIED BY 'gengar1509';");
-    await connection.query("GRANT ALL PRIVILEGES ON sistema_gestao.* TO 'omnis'@'localhost';");
+    await connection.query("CREATE USER IF NOT EXISTS 'omnis'@'%' IDENTIFIED BY 'gengar1509';");
+    await connection.query("GRANT ALL PRIVILEGES ON sistema_gestao.* TO 'omnis'@'%';");
     await connection.query('FLUSH PRIVILEGES;');
     console.log('Usuário criado (se necessário) e privilégios concedidos com sucesso!');
   } catch (error) {

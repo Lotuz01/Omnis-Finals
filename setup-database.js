@@ -8,28 +8,11 @@
 
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
 
-const colors = {
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  reset: '\x1b[0m',
-  bold: '\x1b[1m'
-};
 
-function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`);
-}
 
-function logHeader(title) {
-  console.log('\n' + '='.repeat(60));
-  log(title, 'bold');
-  console.log('='.repeat(60));
-}
+
+
 
 async function setupDatabase() {
   let connection;

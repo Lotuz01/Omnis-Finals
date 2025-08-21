@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { dbPool } from '@/utils/database-pool';
+import { executeQuery } from '../../../../database.js';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
 export async function GET() {
@@ -22,10 +22,10 @@ export async function GET() {
     }
     
     // Buscar o usuário pelo username - usando índice idx_users_username
-    const [userRows] = await dbPool.execute(
+    const [userRows] = await executeQuery(
       'SELECT id FROM users WHERE username = ? LIMIT 1',
       [username]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (userRows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -34,28 +34,28 @@ export async function GET() {
     const userId = userRows[0].id;
     
     // Buscar estatísticas do usuário - queries otimizadas com índices
-    const [productStats] = await dbPool.execute(
+    const [productStats] = await executeQuery(
       'SELECT COUNT(*) as totalProducts FROM products WHERE user_id = ?',
       [userId]
-    ) as [{ totalProducts: number }[], unknown];
+    );
     
     // Query otimizada para movimentações do mês atual - usando índice idx_movements_main
-    const [movementStats] = await dbPool.execute(
+    const [movementStats] = await executeQuery(
       'SELECT COUNT(*) as totalMovements FROM movements WHERE user_id = ? AND created_at >= DATE_FORMAT(NOW(), "%Y-%m-01")',
       [userId]
-    ) as [{ totalMovements: number }[], unknown];
+    );
     
     // Query otimizada para contas - usando índice idx_accounts_user_due_date
-    const [accountStats] = await dbPool.execute(
+    const [accountStats] = await executeQuery(
       'SELECT COUNT(*) as totalAccounts FROM accounts WHERE user_id = ?',
       [userId]
-    ) as [{ totalAccounts: number }[], unknown];
+    );
     
     // Query otimizada para contas pendentes - usando índice idx_accounts_status_due_date
-    const [pendingStats] = await dbPool.execute(
+    const [pendingStats] = await executeQuery(
       'SELECT COUNT(*) as pendingAccounts FROM accounts WHERE user_id = ? AND status = "pendente"',
       [userId]
-    ) as [{ pendingAccounts: number }[], unknown];
+    );
 
     const stats = {
       totalProducts: productStats[0]?.totalProducts || 0,

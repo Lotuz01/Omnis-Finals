@@ -1,10 +1,10 @@
 // Remove these lines:
 // import fs from 'fs';
 // import path from 'path';
-import { connectToDatabase } from '../utils/database-pool';
+import * as db from '../database.js';
 import forge from 'node-forge';
 import { SignedXml } from 'xml-crypto';
-import { RowDataPacket } from 'mysql2/promise';
+import { RowDataPacket, PoolConnection } from 'mysql2/promise';
 
 /**
  * Interface para configuração do certificado digital
@@ -232,22 +232,24 @@ export class CertificadoService {
    * Carrega o certificado do arquivo
    */
   private async carregarCertificado(): Promise<void> {
+    let connection: PoolConnection | undefined;
     try {
-      const connection = await connectToDatabase();
-      const [rows] = await connection.execute<RowDataPacket[]>(
-        'SELECT content, password FROM certificates WHERE name = ?',
-        [this.config.nome]
-      );
-      if (rows.length === 0) {
-        throw new Error(`Certificado não encontrado: ${this.config.nome}`);
-      }
-      const { content, password } = rows[0] as { content: Buffer; password: string | null };
-      this.config.senha = password || this.config.senha;
-      
-      const certificadoBuffer = Buffer.from(content);
-      
-      if (this.config.tipo === 'A1') {
-        const p12 = forge.pkcs12.pkcs12FromAsn1(
+      connection = await db.connection().getConnection();
+      try {
+        const [rows] = await connection!.query(
+          'SELECT content, password FROM certificates WHERE name = ?',
+          [this.config.nome]
+        ) as [RowDataPacket[], any];
+        if (rows.length === 0) {
+          throw new Error(`Certificado não encontrado: ${this.config.nome}`);
+        }
+        const { content, password } = rows[0] as { content: Buffer; password: string | null };
+        this.config.senha = password || this.config.senha;
+        
+        const certificadoBuffer = Buffer.from(content);
+        
+        if (this.config.tipo === 'A1') {
+          const p12 = forge.pkcs12.pkcs12FromAsn1(
           forge.asn1.fromDer(forge.util.createBuffer(certificadoBuffer.toString('binary'))),
           this.config.senha
         );
@@ -277,7 +279,10 @@ export class CertificadoService {
       console.error('[CertificadoService] Erro ao carregar certificado:', error);
       throw error;
     }
+  } finally {
+    if (connection) connection.release();
   }
+}
 
   /**
    * Verifica se o certificado está dentro da validade

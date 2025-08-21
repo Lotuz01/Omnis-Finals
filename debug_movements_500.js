@@ -106,7 +106,7 @@ async function debugMovements500() {
           if (jsonData.movements) {
             console.log(`   📊 ${jsonData.movements.length} movimentações encontradas`);
           }
-        } catch (e) {
+        } catch {
           console.log('   ❌ Resposta não é JSON válido');
           console.log('   Resposta:', movementsResponse.data.substring(0, 100));
         }

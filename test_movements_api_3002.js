@@ -48,7 +48,7 @@ async function testMovementsAPI() {
         const data = JSON.parse(responseText);
         console.log('✅ API de movimentações funcionando!');
         console.log('Dados retornados:', JSON.stringify(data, null, 2));
-      } catch (parseError) {
+      } catch {
         console.log('❌ Resposta não é JSON válido');
         console.log('Content-Type:', movementsResponse.headers.get('content-type'));
       }

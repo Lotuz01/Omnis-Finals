@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbPool } from '../../../utils/database-pool';
+import { executeQuery } from '../../../database.js';
 import { cookies } from 'next/headers';
 import { cache, CACHE_KEYS, CACHE_TTL } from '../../../lib/cache';
 import { invalidateCacheByRoute } from '../../../middleware/cache';
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const [userRows] = await dbPool.execute(
+    const userRows = await executeQuery(
       'SELECT id FROM users WHERE username = ? LIMIT 1',
       [username]
     );
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
-    const [rows] = await dbPool.execute(
+    const rows = await executeQuery(
       'SELECT id, company_name as name, cnpj, email, phone, address, city, state, zip_code, contact_person, created_at, updated_at FROM clients ORDER BY company_name ASC LIMIT ? OFFSET ?',
       [limit.toString(), offset.toString()]
     );
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         'Cache-Control': 'public, max-age=300'
       }
     });
-    const [countRows] = await dbPool.execute('SELECT COUNT(*) as total FROM clients');
+    const countRows = await executeQuery('SELECT COUNT(*) as total FROM clients');
     const total = countRows[0].total;
     const responseData = {
       clients: rows,
@@ -77,42 +77,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Extrair username do token (remover timestamp se presente)
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
     
-    // Buscar o usuário pelo username
-    const [userRows] = await dbPool.execute(
+    const userRows = await executeQuery(
       'SELECT id FROM users WHERE username = ?',
       [username]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (userRows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
     const { company_name, cnpj, email, phone, address, city, state, zip_code, contact_person } = await request.json();
 
-    // Validações básicas
     if (!company_name || !cnpj || !email) {
       return NextResponse.json({ message: 'Company name, CNPJ and email are required' }, { status: 400 });
     }
 
-    // Verificar se email já existe - usando índice idx_clients_email
-    const [existingClient] = await dbPool.execute(
+    const existingClient = await executeQuery(
       'SELECT id FROM clients WHERE email = ? LIMIT 1',
       [email]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (existingClient.length > 0) {
       return NextResponse.json({ message: 'Email already exists' }, { status: 400 });
     }
 
-    // Insert otimizado - usando campos da estrutura real da tabela
-    const [result] = await dbPool.execute(
+    const result = await executeQuery(
       'INSERT INTO clients (company_name, cnpj, email, phone, address, city, state, zip_code, contact_person, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
       [company_name, cnpj, email, phone, address, city, state, zip_code, contact_person]
-    ) as [{ insertId: number }, unknown];
+    );
 
-    // Invalidar cache após criação
     await cache.del(CACHE_KEYS.CLIENTS);
     await invalidateCacheByRoute('/api/clients');
 
@@ -132,14 +126,12 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Extrair username do token (remover timestamp se presente)
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
-    
-    // Buscar o usuário pelo username
-    const [userRows] = await dbPool.execute(
+
+    const userRows = await executeQuery(
       'SELECT id FROM users WHERE username = ?',
       [username]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (userRows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -150,33 +142,29 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: 'ID, name and email are required' }, { status: 400 });
     }
 
-    // Verificar se o cliente existe - usando PRIMARY KEY
-    const [clientRows] = await dbPool.execute(
+    const clientRows = await executeQuery(
       'SELECT id FROM clients WHERE id = ? LIMIT 1',
       [id]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (clientRows.length === 0) {
       return NextResponse.json({ message: 'Client not found' }, { status: 404 });
     }
 
-    // Verificar se email já existe em outro cliente - usando índice idx_clients_email
-    const [existingClient] = await dbPool.execute(
+    const existingClient = await executeQuery(
       'SELECT id FROM clients WHERE email = ? AND id != ? LIMIT 1',
       [email, id]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (existingClient.length > 0) {
       return NextResponse.json({ message: 'Email already exists' }, { status: 400 });
     }
 
-    // Update otimizado usando PRIMARY KEY
-    await dbPool.execute(
+    await executeQuery(
       'UPDATE clients SET company_name = ?, email = ?, phone = ?, address = ?, updated_at = NOW() WHERE id = ?',
       [name, email, phone, address, id]
     );
 
-    // Invalidar cache após atualização
     await cache.del(CACHE_KEYS.CLIENTS);
     await invalidateCacheByRoute('/api/clients');
 
@@ -196,14 +184,12 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Extrair username do token (remover timestamp se presente)
     const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
-    
-    // Buscar o usuário pelo username
-    const [userRows] = await dbPool.execute(
+
+    const userRows = await executeQuery(
       'SELECT id FROM users WHERE username = ?',
       [username]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (userRows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -214,20 +200,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ message: 'Client ID is required' }, { status: 400 });
     }
 
-    // Verificar se o cliente existe - usando PRIMARY KEY
-    const [clientRows] = await dbPool.execute(
+    const clientRows = await executeQuery(
       'SELECT id FROM clients WHERE id = ? LIMIT 1',
       [id]
-    ) as [{ id: number }[], unknown];
+    );
 
     if (clientRows.length === 0) {
       return NextResponse.json({ message: 'Client not found' }, { status: 404 });
     }
 
-    // Delete otimizado usando PRIMARY KEY
-    await dbPool.execute('DELETE FROM clients WHERE id = ?', [id]);
+    await executeQuery('DELETE FROM clients WHERE id = ?', [id]);
     
-    // Invalidar cache após exclusão
     await cache.del(CACHE_KEYS.CLIENTS);
     await invalidateCacheByRoute('/api/clients');
     

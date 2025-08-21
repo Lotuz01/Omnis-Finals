@@ -31,13 +31,13 @@ Sistema web moderno e completo para gestão empresarial, desenvolvido com Next.j
 
 ### Backend
 - **Next.js API Routes**: Endpoints RESTful
-- **Prisma**: ORM para PostgreSQL
+- **Prisma**: ORM para MySQL
 - **JWT**: Autenticação stateless
 - **Bcrypt**: Hash de senhas
 - **Multer**: Upload de arquivos
 
 ### Banco de Dados
-- **PostgreSQL 15**: Banco principal
+- **MySQL 8**: Banco principal
 - **Prisma Migrations**: Controle de versão do schema
 
 ## 📦 Instalação Local
@@ -45,7 +45,7 @@ Sistema web moderno e completo para gestão empresarial, desenvolvido com Next.j
 ### Pré-requisitos
 - Node.js 18+
 - Git
-- PostgreSQL instalado localmente
+- MySQL instalado localmente
 
 ### Passos para Rodar Localmente
 ```bash
@@ -80,7 +80,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 PORT=3000
 
 # Banco de Dados
-DATABASE_URL=postgresql://user:password@localhost:5432/sistema_gestao
+DATABASE_URL=mysql://user:password@localhost:3306/sistema_gestao
 
 
 
@@ -208,11 +208,11 @@ npm run test:coverage
 
 #### Banco de dados não conecta
 ```bash
-# Verificar status do PostgreSQL
+# Verificar status do MySQL
 
 
 # Verificar logs do banco
-
+- **MySQL**: `/var/log/mysql/mysql.log`
 
 # Resetar banco (CUIDADO!)
 
@@ -235,7 +235,7 @@ curl http://localhost:3000/api/metrics
 
 - **Aplicação**: `/var/log/sistema-gestao/app.log`
 - **Nginx**: `/var/log/nginx/access.log`
-- **PostgreSQL**: `/var/log/postgresql/postgresql.log`
+- **MySQL**: `/var/log/mysql/mysql.log`
 - **Sistema**: `/var/log/sistema-gestao/system.log`
 
 ## 🔄 Atualizações

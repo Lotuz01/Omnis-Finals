@@ -99,7 +99,7 @@ async function testMovementsAPI() {
       try {
         const errorData = JSON.parse(movementsResponse.body);
         console.log('Erro JSON:', errorData);
-      } catch (e) {
+      } catch {
         console.log('Resposta não é JSON válido');
       }
     }

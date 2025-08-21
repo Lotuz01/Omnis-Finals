@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { dbPool, withTransaction } from '../../../utils/database-pool';
+import * as db from '../../../database.js';
 import { logger } from '../../../utils/logger';
 
 
@@ -10,21 +10,19 @@ async function verifyAdmin(authToken: string) {
     return false;
   }
 
-  // Extrair username do token (remover timestamp se presente)
   const username = authToken.includes('_') ? authToken.split('_')[0] : authToken;
 
   try {
-    const [users] = await dbPool.execute<{ username: string; is_admin: number | boolean }[]>(
+    const rows = await db.executeQuery(
       'SELECT username, is_admin FROM users WHERE username = ?',
       [username]
     );
     
-    if (users.length === 0) {
+    if (rows.length === 0) {
       return false;
     }
     
-    const user = users[0];
-    // Compatível com colunas BOOLEAN (true/false) e TINYINT(1) (0/1)
+    const user = rows[0];
     return Boolean(user.is_admin);
   } catch (error) {
     logger.error('Erro ao verificar admin', error);
@@ -51,8 +49,8 @@ export async function GET() {
       return NextResponse.json({ message: 'Admin access required' }, { status: 403 });
     }
 
-    const [rows] = await dbPool.execute<{ id: number; created_at: Date; version: string }[]>('SELECT id, created_at, version FROM backups ORDER BY created_at DESC');
-    const backups = rows.map(row => ({
+    const rows = await db.executeQuery('SELECT id, created_at, version FROM backups ORDER BY created_at DESC');
+    const backups = rows.map((row: { id: number; created_at: Date; version: string }) => ({
       id: row.id,
       created: row.created_at.toISOString(),
       version: row.version
@@ -89,11 +87,7 @@ export async function POST(request: NextRequest) {
     const { action, backupId } = await request.json();
 
     if (action === 'create') {
-      const backup: {
-        timestamp: string;
-        version: string;
-        data: { [table: string]: any[] };
-      } = {
+      const backup = {
         timestamp: new Date().toISOString(),
         version: '1.0',
         data: {}
@@ -102,12 +96,12 @@ export async function POST(request: NextRequest) {
       const tables = ['users', 'products', 'movements', 'accounts'];
 
       for (const table of tables) {
-        const [rows] = await dbPool.execute(`SELECT * FROM ${table}`);
-        backup.data[table] = rows;
+        const rows = await db.executeQuery(`SELECT * FROM ${table}`);
+        (backup.data as Record<string, unknown>)[table] = rows;
       }
 
       const backupJson = JSON.stringify(backup, null, 2);
-      const [result] = await dbPool.execute(
+      const result = await db.executeQuery(
         'INSERT INTO backups (version, data) VALUES (?, ?)', 
         [backup.version, backupJson]
       );
@@ -116,38 +110,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Backup created successfully', id: result.insertId });
 
     } else if (action === 'restore' && backupId) {
-      const [rows] = await dbPool.execute<{ data: string }[]>('SELECT data FROM backups WHERE id = ?', [backupId]);
+      const rows = await db.executeQuery('SELECT data FROM backups WHERE id = ?', [backupId]);
       if (rows.length === 0) {
         return NextResponse.json({ message: 'Backup not found' }, { status: 404 });
       }
 
-      const backup: {
-        timestamp: string;
-        version: string;
-        data: { [table: string]: any[] };
-      } = JSON.parse(rows[0].data);
+      const backup = JSON.parse(rows[0].data);
 
-      await withTransaction(async (connection) => {
-        await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
+      const mysqlConnection = await db.connection().getConnection();
+      try {
+        await mysqlConnection.beginTransaction();
+        await mysqlConnection.query('SET FOREIGN_KEY_CHECKS = 0');
 
         for (const [tableName, tableData] of Object.entries(backup.data)) {
-          await connection.execute(`DELETE FROM ${tableName}`);
+          await mysqlConnection.query(`DELETE FROM ${tableName}`);
 
-          if ((tableData as any[]).length > 0) {
-            const columns = Object.keys((tableData as any[])[0]);
+          if (Array.isArray(tableData) && tableData.length > 0) {
+            const columns = Object.keys(tableData[0]);
             const placeholders = columns.map(() => '?').join(', ');
             const columnNames = columns.join(', ');
             const insertQuery = `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders})`;
 
-            for (const row of (tableData as any[])) {
+            for (const row of tableData) {
               const values = columns.map(col => row[col]);
-              await connection.execute(insertQuery, values);
+              await mysqlConnection.query(insertQuery, values);
             }
           }
         }
 
-        await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
-      });
+        await mysqlConnection.query('SET FOREIGN_KEY_CHECKS = 1');
+        await mysqlConnection.commit();
+      } catch (error) {
+        await mysqlConnection.rollback();
+        throw error;
+      } finally {
+        mysqlConnection.release();
+      }
 
       logger.info('Backup restored successfully', { id: backupId });
       return NextResponse.json({ message: 'Backup restored successfully' });
@@ -183,7 +181,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ message: 'Backup ID is required' }, { status: 400 });
     }
 
-    await dbPool.execute('DELETE FROM backups WHERE id = ?', [backupId]);
+    await db.executeQuery('DELETE FROM backups WHERE id = ?', [backupId]);
 
     return NextResponse.json({ message: 'Backup deleted successfully' });
     

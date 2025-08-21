@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbPool } from '../../../../utils/database-pool';
+import { executeQuery } from '../../../../database.js';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { logger } from '../../../../utils/logger';
@@ -37,7 +37,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       values = [newUsername, name, isAdmin, hashedPassword, id];
     }
     
-    const [result] = await dbPool.execute(query, values) as [{ affectedRows: number }, unknown];
+    const [result] = await executeQuery(query, values);
     
     if (result.affectedRows === 0) {
       logger.info('Usuário não encontrado para atualização', { id });
@@ -83,7 +83,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     const { id } = await params;
     
-    const [result] = await dbPool.execute('DELETE FROM users WHERE id = ?', [id]);
+    const [result] = await executeQuery('DELETE FROM users WHERE id = ?', [id]);
     
     if ((result as {affectedRows: number}).affectedRows === 0) {
       logger.info('Usuário não encontrado para exclusão', { id });

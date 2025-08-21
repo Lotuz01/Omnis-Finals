@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbPool } from '../../../../utils/database-pool';
+import { executeQuery } from '../../../../database.js';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
@@ -12,10 +12,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Missing username or password' }, { status: 400 });
     }
 
-    const [rows] = await dbPool.execute(
+    const rows = await executeQuery(
       'SELECT id, username, password, name, is_admin FROM users WHERE username = ?',
       [username]
-    ) as [{ id: number; username: string; password: string; name: string; is_admin: number }[], unknown];
+    );
 
     console.log('🔐 [LOGIN] Usuários encontrados:', rows.length);
     

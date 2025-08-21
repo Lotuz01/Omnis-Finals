@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbPool } from '@/utils/database-pool';
+import { executeQuery } from '../../../../../database.js';
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const resolvedParams = await params;
     const accountId = resolvedParams.id;
 
-    const [rows] = await dbPool.execute(
+    const rows = await executeQuery(
       'SELECT id, payment_amount, payment_date, notes, created_at FROM account_payments WHERE account_id = ? ORDER BY payment_date DESC',
       [accountId]
     );
